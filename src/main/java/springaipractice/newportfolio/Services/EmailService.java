@@ -16,7 +16,7 @@ public class EmailService {
 
         SimpleMailMessage message = new SimpleMailMessage();
 
-        message.setFrom("debmalya8597@gmail.com"); // ✅ FIX ADDED
+        message.setFrom("debmalyachaki5@gmail.com"); // ✅ FIX ADDED
         message.setTo(toEmail);
         message.setSubject("Thank you for contacting us");
 
@@ -37,7 +37,7 @@ public class EmailService {
     public void notifyAdmin(Contact contact) {
         SimpleMailMessage msg = new SimpleMailMessage();
 
-        msg.setFrom("debmalya8597@gmail.com"); // ✅ FIX ADDED
+        msg.setFrom("debmalyachaki5@gmail.com"); // ✅ FIX ADDED
         msg.setTo("debmalyachaki5@gmail.com");
         msg.setSubject("New Contact Form Submission");
 
