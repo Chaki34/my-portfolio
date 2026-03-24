@@ -14,9 +14,7 @@ import springaipractice.newportfolio.Services.VisitService;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Controller
@@ -148,16 +146,13 @@ public class homeController {
 
 
     @PostMapping("/contact")
-    public String handleContact(@RequestParam String name,
-                                @RequestParam String email,
-                                @RequestParam String subject,
-                                @RequestParam String message,
-                                Model model) {
+    @ResponseBody
+    public Map<String, String> handleContact(
+            @RequestParam String name,
+            @RequestParam String email,
+            @RequestParam String subject,
+            @RequestParam String message) {
 
-
-        System.out.println("CONTACT HIT: " + email); // DEBUG
-
-        // 1. Save to DB
         Contact contact = new Contact();
         contact.setName(name);
         contact.setEmail(email);
@@ -166,16 +161,14 @@ public class homeController {
 
         contactRepository.save(contact);
 
-        // 2. Send Email
         emailService.sendConfirmationEmail(email, name);
-
-        // 3. sent admin also
         emailService.notifyAdmin(contact);
 
-        // 4. Feedback
-        model.addAttribute("success", "Message sent successfully!");
+        Map<String, String> response = new HashMap<>();
+        response.put("status", "success");
+        response.put("message", "Message sent successfully");
 
-        return "redirect:/index";
+        return response;
     }
 
 }
