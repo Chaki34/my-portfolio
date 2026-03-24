@@ -161,8 +161,19 @@ public class homeController {
 
         contactRepository.save(contact);
 
-        emailService.sendConfirmationEmail(email, name);
-        emailService.notifyAdmin(contact);
+        contactRepository.save(contact);
+
+        try {
+            emailService.sendConfirmationEmail(email, name);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        try {
+            emailService.notifyAdmin(contact);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         Map<String, String> response = new HashMap<>();
         response.put("status", "success");
