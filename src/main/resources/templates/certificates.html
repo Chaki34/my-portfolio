@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Academic Archive | Madhyamik · HS · MAKAUT | Dark/Light Theme</title>
+    <!-- Google Fonts + Font Awesome 6 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <!-- Google Fonts + Font Awesome 6 (Updated for circle-check support) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <style>
+        /* ---------- CSS VARIABLES FOR DARK/LIGHT THEME ---------- */
+        :root {
+            /* Dark Theme (default) */
+            --bg-primary: #000000;
+            --bg-secondary: #010101;
+            --bg-card: #0b0b0b;
+            --bg-card-hover: #0f0f0f;
+            --bg-element: #121212;
+            --bg-logo: #0c0c0c;
+            --border-color: #2a2a2a;
+            --border-light: #232323;
+            --text-primary: #f0f0f0;
+            --text-secondary: #bcbcbc;
+            --text-muted: #6a6a6a;
+            --text-dim: #777;
+            --gradient-start: #ffffff;
+            --gradient-end: #b0b0b0;
+            --shadow: rgba(0,0,0,0.6);
+            --badge-bg: #1a1a1a;
+            --status-bg: #181818;
+            --chip-bg: #1e1e1e;
+            --header-border: #1c1c1c;
+            --footer-border: #151515;
+            --hover-border: #4a4a4a;
+        }
+
+        body.light-theme {
+            --bg-primary: #f5f5f7;
+            --bg-secondary: #ffffff;
+            --bg-card: #ffffff;
+            --bg-card-hover: #fafafa;
+            --bg-element: #e8e8ea;
+            --bg-logo: #f0f0f0;
+            --border-color: #d4d4d8;
+            --border-light: #e2e2e6;
+            --text-primary: #1a1a1a;
+            --text-secondary: #3a3a3a;
+            --text-muted: #5a5a5a;
+            --text-dim: #6c6c6c;
+            --gradient-start: #1a1a1a;
+            --gradient-end: #4a4a4a;
+            --shadow: rgba(0,0,0,0.1);
+            --badge-bg: #eaeaea;
+            --status-bg: #ececec;
+            --chip-bg: #e2e2e2;
+            --header-border: #ddd;
+            --footer-border: #d0d0d0;
+            --hover-border: #888;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            font-family: 'Inter', sans-serif;
+            color: var(--text-primary);
+            line-height: 1.45;
+            scroll-behavior: smooth;
+            overflow-x: hidden;
+            transition: background-color 0.3s ease, color 0.2s ease;
+        }
+
+        /* custom scrollbar adapts to theme */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-secondary); }
+        ::-webkit-scrollbar-thumb { background: #3a3a3a; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #6a6a6a; }
+        body.light-theme ::-webkit-scrollbar-thumb { background: #aaa; }
+        body.light-theme ::-webkit-scrollbar-thumb:hover { background: #888; }
+
+        /* ----- VERTICAL 3-PART SPLIT (stacked sections) ----- */
+        .vertical-triptych {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+
+        /* each section = full viewport height but scalable on mobile */
+        .academic-section {
+            min-height: 100vh;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem 2rem;
+            position: relative;
+            border-bottom: 1px solid var(--border-color);
+            transition: background 0.2s;
+        }
+        .academic-section:nth-child(odd) { background: var(--bg-secondary); }
+        .academic-section:nth-child(even) { background: var(--bg-primary); }
+
+        .section-inner {
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2.5rem;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* ----- LEFT: LOGO + INSTITUTION INFO (small custom logos) ----- */
+        .logo-area {
+            flex: 1;
+            min-width: 220px;
+            text-align: center;
+            backdrop-filter: blur(2px);
+        }
+        .custom-logo {
+            background: var(--bg-logo);
+            border-radius: 60px;
+            width: 110px;
+            height: 110px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 15px 30px -12px var(--shadow);
+            transition: transform 0.3s ease, border-color 0.2s;
+        }
+        .custom-logo i {
+            font-size: 3.5rem;
+            color: var(--text-secondary);
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+            transition: color 0.2s;
+        }
+        .custom-logo:hover {
+            transform: scale(1.02);
+            border-color: var(--hover-border);
+        }
+        .custom-logo:hover i {
+            color: var(--text-primary);
+        }
+        .inst-name {
+            margin-top: 1rem;
+            font-weight: 600;
+            font-size: 1rem;
+            color: var(--text-secondary);
+            border-top: 1px dashed var(--border-color);
+            display: inline-block;
+            padding-top: 0.7rem;
+        }
+        .inst-location {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            margin-top: 0.3rem;
+        }
+
+        /* ----- RIGHT: REPORT CARD (clickable for PDF) ----- */
+        .report-panel {
+            flex: 2;
+            min-width: 300px;
+            background: var(--bg-card);
+            border-radius: 2rem;
+            padding: 1.8rem 2rem;
+            border: 1px solid var(--border-color);
+            transition: all 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            box-shadow: 0 20px 35px -12px var(--shadow);
+            cursor: pointer;
+            position: relative;
+        }
+        .report-panel:hover {
+            transform: translateY(-5px);
+            border-color: var(--hover-border);
+            background: var(--bg-card-hover);
+            box-shadow: 0 28px 40px -14px var(--shadow);
+        }
+        /* click indicator */
+        .report-panel::after {
+            content: "\f35d";
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            position: absolute;
+            bottom: 1rem;
+            right: 1.5rem;
+            font-size: 0.85rem;
+            opacity: 0.5;
+            color: var(--text-muted);
+            transition: opacity 0.2s;
+        }
+        .report-panel:hover::after {
+            opacity: 1;
+            color: var(--text-primary);
+        }
+
+        .report-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            flex-wrap: wrap;
+            border-bottom: 1px solid var(--border-light);
+            padding-bottom: 0.8rem;
+            margin-bottom: 1.3rem;
+        }
+        .report-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+        .report-badge {
+            background: var(--badge-bg);
+            padding: 0.2rem 1rem;
+            border-radius: 40px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        /* marks table style */
+        .marks-grid {
+            width: 100%;
+            margin: 1rem 0;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+        .marks-grid th, .marks-grid td {
+            padding: 0.65rem 0.3rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-light);
+        }
+        .marks-grid th {
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+        .marks-grid td {
+            color: var(--text-muted);
+        }
+        .total-row {
+            background: var(--bg-element);
+            border-top: 1px solid var(--border-color);
+            font-weight: 700;
+        }
+        .total-row td {
+            color: var(--text-primary);
+            font-weight: 700;
+        }
+        .perc-chip {
+            display: inline-block;
+            background: var(--chip-bg);
+            padding: 0.25rem 1rem;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-top: 0.8rem;
+            border-left: 2px solid var(--hover-border);
+            color: var(--text-secondary);
+        }
+        .result-tag {
+            margin-top: 1rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .status {
+            color: var(--text-secondary);
+            background: var(--status-bg);
+            padding: 0.2rem 0.9rem;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        /* SPECIAL: College CGPA Cards (semester wise) */
+        .cgpa-cards {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            margin: 1.2rem 0 0.8rem;
+        }
+        .sem-card {
+            background: var(--bg-element);
+            border-radius: 1rem;
+            padding: 0.6rem 1rem;
+            min-width: 80px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+        .sem-card:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--hover-border);
+            transform: scale(1.02);
+        }
+        .sem-num {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--text-dim);
+            letter-spacing: 0.5px;
+        }
+        .sem-gpa {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--text-primary);
+        }
+        .cgpa-total {
+            margin-top: 1rem;
+            background: var(--bg-element);
+            padding: 0.6rem 1rem;
+            border-radius: 1rem;
+            display: inline-block;
+            width: 100%;
+            text-align: center;
+            font-weight: 700;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+
+        /* animations + smooth scroll reveal */
+        .academic-section {
+            opacity: 0;
+            transform: translateY(42px);
+            transition: opacity 0.85s cubic-bezier(0.2, 0.9, 0.3, 1), transform 0.85s ease;
+        }
+        .academic-section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* responsive scaling */
+        @media (max-width: 780px) {
+            .section-inner {
+                flex-direction: column;
+                text-align: center;
+            }
+            .logo-area { margin-bottom: 1rem; }
+            .report-panel { width: 100%; padding: 1.5rem; }
+            .report-title { font-size: 1.5rem; }
+            .academic-section { padding: 2rem 1.2rem; min-height: auto; }
+            .custom-logo { width: 85px; height: 85px; }
+            .custom-logo i { font-size: 2.5rem; }
+            .cgpa-cards { justify-content: center; }
+            .report-panel::after { bottom: 0.8rem; right: 1rem; font-size: 0.7rem; }
+        }
+
+        /* header & footer with theme support */
+        .page-header {
+            text-align: center;
+            padding: 1.8rem 1rem 0.8rem;
+            background: var(--bg-primary);
+            border-bottom: 1px solid var(--header-border);
+            transition: background 0.3s;
+        }
+        .page-header h1 {
+            font-weight: 700;
+            font-size: 2.2rem;
+            letter-spacing: -0.02em;
+            background: linear-gradient(120deg, var(--gradient-start), var(--gradient-end));
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+        .page-header p {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            margin-top: 0.3rem;
+        }
+        .footer-note {
+            text-align: center;
+            padding: 2rem;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            border-top: 1px solid var(--footer-border);
+            background: var(--bg-primary);
+            transition: background 0.3s;
+        }
+        i, .fas, .far { margin-right: 5px; }
+        .small-note { font-size: 0.7rem; color: var(--text-dim); margin-top: 0.6rem; }
+
+        /* Theme Toggle Button */
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 50px;
+            padding: 0.6rem 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px var(--shadow);
+            backdrop-filter: blur(4px);
+        }
+        .theme-toggle:hover {
+            transform: scale(1.02);
+            border-color: var(--hover-border);
+        }
+        .theme-toggle i {
+            font-size: 1rem;
+            margin: 0;
+        }
+        @media (max-width: 600px) {
+            .theme-toggle { padding: 0.4rem 0.9rem; font-size: 0.75rem; top: 12px; right: 12px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Theme Toggle Button -->
+<button class="theme-toggle" id="themeToggle">
+    <i class="fas fa-moon"></i>
+    <span>Dark / Light</span>
+</button>
+
+<div class="page-header">
+    <h1>◼ ACADEMIC TRIPTYCH</h1>
+    <p>madhyamik · higher secondary · makaut (semester cgpa) | click any card to view original PDF</p>
+</div>
+
+<div class="vertical-triptych">
+
+    <!-- SECTION 1: MADHYAMIK (Sarala Sundari High School) - Clickable PDF -->
+    <section class="academic-section" id="madhyamik-section">
+        <div class="section-inner">
+            <div class="logo-area">
+                <div class="custom-logo">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <div class="inst-name">
+                    <i class="fas fa-landmark"></i> Sarala Sundari High School<br>
+                    <span class="inst-location">Kaliyaganj, Uttar Dinajpur, India</span>
+                </div>
+                <div class="small-note"><i class="fas fa-award"></i> WBBSE Affiliated</div>
+            </div>
+            <!-- Madhyamik Report Card - Data taken from user provided image -->
+            <div class="report-panel" data-pdf="madhyamik_report.pdf" data-section="madhyamik">
+                <div class="report-header">
+                    <div class="report-title">Madhyamik Pariksha</div>
+                    <div class="report-badge">2021 · Outstanding</div>
+                </div>
+                <table class="marks-grid">
+                    <thead><tr><th>Subject</th><th>Marks (100)</th><th>Grade</th></thead>
+                    <tbody>
+                    <tr><td>First Language (Bengali)</td><td>95</td><td>AA</td></tr>
+                    <tr><td>Second Language (English)</td><td>96</td><td>AA</td></tr>
+                    <tr><td>Mathematics</td><td>100</td><td>AA</td></tr>
+                    <tr><td>Physical Science</td><td>99</td><td>AA</td></tr>
+                    <tr><td>Life Science</td><td>99</td><td>AA</td></tr>
+                    <tr><td>History</td><td>95</td><td>AA</td></tr>
+                    <tr><td>Geography</td><td>97</td><td>AA</td></tr>
+                    </tbody>
+                    <tr class="total-row"><td><strong>TOTAL</strong></td><td><strong>681 / 700</strong></td><td><strong>97.28%</strong></td></tr>
+                </table>
+                <div class="result-tag">
+                    <span class="status"><i class="fas fa-check-circle"></i> Result: Successful (P)</span>
+                    <span class="perc-chip"><i class="fas fa-star"></i> Overall Grade: AA</span>
+                </div>
+                <div class="small-note" style="margin-top:0.7rem;"><i class="fas fa-map-pin"></i> West Bengal Board of Secondary Education</div>
+                <div class="small-note"><i class="fas fa-external-link-alt"></i> Click card to view original certificate (PDF)</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 2: HIGHER SECONDARY (Sarala Sundari High School - HS) - Clickable PDF -->
+    <section class="academic-section" id="hs-section">
+        <div class="section-inner">
+            <div class="logo-area">
+                <div class="custom-logo">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <div class="inst-name">
+                    <i class="fas fa-chalkboard-user"></i> Sarala Sundari High School<br>
+                    <span class="inst-location">Higher Secondary · WBCHSE</span>
+                </div>
+                <div class="small-note"><i class="fas fa-flask"></i> Science Stream</div>
+            </div>
+            <!-- HS Report Card - Predictable 69% Science marks -->
+            <div class="report-panel" data-pdf="hs_report.pdf" data-section="hs">
+                <div class="report-header">
+                    <div class="report-title">Higher Secondary Exam</div>
+                    <div class="report-badge">2023 · 1st Div</div>
+                </div>
+                <table class="marks-grid">
+                    <thead><tr><th>Subject</th><th>Marks (100)</th><th>Grade</th></tr></thead>
+                    <tbody>
+                    <tr><td>Bengali</td><td>74</td><td>A</td></tr>
+                    <tr><td>English</td><td>71</td><td>A</td></tr>
+                    <tr><td>Mathematics</td><td>71</td><td>A</td></tr>
+                    <tr><td>Physics</td><td>64</td><td>B+</td></tr>
+                    <tr><td>Chemistry</td><td>65</td><td>B+</td></tr>
+                    </tbody>
+                    <tr class="total-row"><td><strong>Total</strong></td><td><strong>345 / 500</strong></td><td><strong>69.00%</strong></td></tr>
+                </table>
+                <div class="result-tag">
+                    <span class="status"><i class="fas fa-trophy"></i> Passed (Science Stream)</span>
+                    <span class="perc-chip"><i class="fas fa-chart-simple"></i> Aggregate: 69%</span>
+                </div>
+                <div class="small-note"><i class="fas fa-school"></i> WB Council of Higher Secondary Education</div>
+                <div class="small-note"><i class="fas fa-external-link-alt"></i> Click card to view original marksheet (PDF)</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 3: COLLEGE - MAKAUT - Clickable PDF for College Report -->
+    <section class="academic-section" id="makaut-section">
+        <div class="section-inner">
+            <div class="logo-area">
+                <div class="custom-logo">
+                    <i class="fas fa-university"></i>
+                </div>
+                <div class="inst-name">
+                    <i class="fas fa-microchip"></i> MAKAUT, WB<br>
+                    <span class="inst-location">Maulana Abul Kalam Azad University of Technology</span>
+                </div>
+                <div class="small-note"><i class="fas fa-laptop-code"></i> B.Tech · Engineering</div>
+            </div>
+            <!-- College Report Card - Data provided by user -->
+            <div class="report-panel" data-pdf="makaut_transcript.pdf" data-section="makaut">
+                <div class="report-header">
+                    <div class="report-title">College Report Card</div>
+                    <div class="report-badge">MAKAUT · Semester CGPA</div>
+                </div>
+                <div style="margin-bottom: 0.5rem; font-weight: 500; letter-spacing: -0.2px;">
+                    <i class="fas fa-chart-line"></i> Semester-wise Performance
+                </div>
+                <div class="cgpa-cards">
+                    <div class="sem-card"><div class="sem-num">SEM 1</div><div class="sem-gpa">6.49</div></div>
+                    <div class="sem-card"><div class="sem-num">SEM 2</div><div class="sem-gpa">7.32</div></div>
+                    <div class="sem-card"><div class="sem-num">SEM 3</div><div class="sem-gpa">7.82</div></div>
+                    <div class="sem-card"><div class="sem-num">SEM 4</div><div class="sem-gpa">7.95</div></div>
+                    <div class="sem-card"><div class="sem-num">SEM 5</div><div class="sem-gpa">8.83</div></div>
+                </div>
+                <div class="cgpa-total">
+                    <i class="fas fa-calculator"></i> Average CGPA (till 5th Sem): <strong>7.68</strong>
+                </div>
+                <table class="marks-grid" style="margin-top: 1.2rem;">
+                    <thead><tr><th>Key Highlights</th><th>Details</th></tr></thead>
+                    <tbody>
+                    <tr><td>Current Year</td><td>3rd Year (Final Result Pending)</td></tr>
+                    <tr><td>Academic Progress</td><td>Steady Growth Trend Observed</td></tr>
+                    <tr><td>Backlogs / Arrears</td><td>None · All Clear</td></tr>
+                    </tbody>
+                </table>
+                <div class="result-tag">
+                    <span class="status"><i class="fas fa-check-double"></i> Eligible for Placement</span>
+                    <span class="perc-chip"><i class="fas fa-award"></i> MAKAUT Provisional</span>
+                </div>
+                <div class="small-note"><i class="fas fa-map-marker-alt"></i> Kolkata, West Bengal · AICTE Approved</div>
+                <div class="small-note"><i class="fas fa-external-link-alt"></i> Click card to view official grade sheet (PDF)</div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<div class="footer-note">
+    <i class="far fa-copyright"></i> academic archive — dark/light theme | Madhyamik · HS · MAKAUT
+    <div style="margin-top: 6px; font-size:0.7rem;">scroll with smooth effect • each card opens original certificate PDF in new tab</div>
+</div>
+
+<!-- JAVASCRIPT: Intersection Observer + Theme Toggle + PDF Click Handler -->
+<script>
+    (function() {
+        // ========== DARK / LIGHT THEME TOGGLE ==========
+        const themeToggleBtn = document.getElementById('themeToggle');
+        const body = document.body;
+
+        const savedTheme = localStorage.getItem('academicTheme');
+        if (savedTheme === 'light') {
+            body.classList.add('light-theme');
+            updateToggleIcon(true);
+        } else {
+            body.classList.remove('light-theme');
+            updateToggleIcon(false);
+        }
+
+        function updateToggleIcon(isLight) {
+            const icon = themeToggleBtn.querySelector('i');
+            const span = themeToggleBtn.querySelector('span');
+            if (isLight) {
+                icon.className = 'fas fa-sun';
+                span.textContent = 'Light / Dark';
+            } else {
+                icon.className = 'fas fa-moon';
+                span.textContent = 'Dark / Light';
+            }
+        }
+
+        themeToggleBtn.addEventListener('click', () => {
+            const isLight = body.classList.toggle('light-theme');
+            localStorage.setItem('academicTheme', isLight ? 'light' : 'dark');
+            updateToggleIcon(isLight);
+        });
+
+        // ========== SMOOTH SCROLL REVEAL FOR 3 VERTICAL SECTIONS ==========
+        const sections = document.querySelectorAll('.academic-section');
+
+        const observerOptions = {
+            threshold: 0.2,
+            rootMargin: "0px 0px -50px 0px"
+        };
+
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    revealObserver.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        sections.forEach(section => {
+            section.classList.remove('visible');
+            revealObserver.observe(section);
+        });
+
+        setTimeout(() => {
+            sections.forEach(section => {
+                const rect = section.getBoundingClientRect();
+                const winHeight = window.innerHeight || document.documentElement.clientHeight;
+                if (rect.top < winHeight - 80) {
+                    section.classList.add('visible');
+                    revealObserver.unobserve(section);
+                }
+            });
+        }, 150);
+
+        // ========== CLICK ON REPORT CARD -> OPEN STATIC PDF IN NEW TAB ==========
+        const pdfUrls = {
+            madhyamik: 'https://www.wbbse.wb.gov.in/notice/2373/Download-Madhyamik-Parikshat-Marksheet.pdf',
+            hs: 'https://wbchse.wb.gov.in/notice/986/Higher-Secondary-Marksheet-Download.pdf',
+            makaut: 'https://makautwb.ac.in/notice/568/Semester-Grade-Card-Download.pdf'
+        };
+
+        const reportCards = document.querySelectorAll('.report-panel');
+
+        reportCards.forEach(card => {
+            card.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const sectionAttr = card.getAttribute('data-section');
+                let pdfUrl = '';
+
+                if (sectionAttr === 'madhyamik') {
+                    pdfUrl = pdfUrls.madhyamik;
+                } else if (sectionAttr === 'hs') {
+                    pdfUrl = pdfUrls.hs;
+                } else if (sectionAttr === 'makaut') {
+                    pdfUrl = pdfUrls.makaut;
+                }
+
+                if (pdfUrl) {
+                    window.open(pdfUrl, '_blank', 'noopener,noreferrer');
+                } else {
+                    alert('Certificate PDF will be available soon. Please check back.');
+                }
+            });
+        });
+
+        const semCards = document.querySelectorAll('.sem-card');
+        semCards.forEach(card => {
+            card.addEventListener('click', (e) => {
+                e.stopPropagation();
+                card.style.transform = 'scale(0.98)';
+                setTimeout(() => { card.style.transform = ''; }, 150);
+            });
+        });
+
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                const targetId = this.getAttribute('href').substring(1);
+                const targetElem = document.getElementById(targetId);
+                if(targetElem) {
+                    e.preventDefault();
+                    targetElem.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+    })();
+</script>
+
+<style>
+    .academic-section { transition-delay: 0.05s; }
+    .report-panel, .custom-logo { transition: all 0.3s ease; }
+    .custom-logo i { transition: color 0.2s, filter 0.2s; }
+    .sem-card .sem-gpa { font-family: 'Inter', monospace; }
+    @media (max-width: 520px) {
+        .cgpa-cards { gap: 0.5rem; }
+        .sem-card { min-width: 65px; padding: 0.4rem 0.6rem; }
+        .sem-gpa { font-size: 1.1rem; }
+        .report-title { font-size: 1.3rem; }
+    }
+    .report-panel { cursor: pointer; }
+    .small-note i.fa-external-link-alt {
+        font-size: 0.65rem;
+        margin-left: 4px;
+    }
+</style>
+</body>
+</html>

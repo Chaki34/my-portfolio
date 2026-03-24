@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title th:text="${profileName + ' - Portfolio'}">DEBMAL - Portfolio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        darkBg: '#0f172a',
+                        darkCard: '#1e293b'
+                    },
+                    animation: {
+                        'fade-up': 'fadeUp 0.6s cubic-bezier(0.2, 0.9, 0.4, 1.1) forwards',
+                        'fade-in': 'fadeIn 0.5s ease forwards',
+                        'scale-in': 'scaleIn 0.4s ease-out forwards',
+                        'slide-in-left': 'slideInLeft 0.5s ease forwards',
+                        'slide-in-right': 'slideInRight 0.5s ease forwards',
+                        'pulse-glow': 'pulseGlow 2s infinite',
+                        'float': 'float 4s ease-in-out infinite',
+                        'progress-fill': 'fillWidth 1s ease-out forwards'
+                    },
+                    keyframes: {
+                        fadeUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' }
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' }
+                        },
+                        scaleIn: {
+                            '0%': { opacity: '0', transform: 'scale(0.9)' },
+                            '100%': { opacity: '1', transform: 'scale(1)' }
+                        },
+                        slideInLeft: {
+                            '0%': { opacity: '0', transform: 'translateX(-30px)' },
+                            '100%': { opacity: '1', transform: 'translateX(0)' }
+                        },
+                        slideInRight: {
+                            '0%': { opacity: '0', transform: 'translateX(30px)' },
+                            '100%': { opacity: '1', transform: 'translateX(0)' }
+                        },
+                        pulseGlow: {
+                            '0%, 100%': { boxShadow: '0 0 0 0 rgba(59,130,246,0.4)' },
+                            '50%': { boxShadow: '0 0 0 8px rgba(59,130,246,0)' }
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-6px)' }
+                        },
+                        fillWidth: {
+                            '0%': { width: '0%' },
+                            '100%': { width: 'var(--target-width)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom Scrollbar & Smooth Transitions */
+        .tools-scroll::-webkit-scrollbar { width: 5px; }
+        .tools-scroll::-webkit-scrollbar-track { background: transparent; }
+        .tools-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; transition: background 0.2s; }
+        .dark .tools-scroll::-webkit-scrollbar-thumb { background: #475569; }
+
+        /* Global transition for all elements */
+        * {
+            transition: all 0.2s ease-in-out;
+        }
+
+        /* Hover card effect */
+        .hover-card {
+            transition: transform 0.25s ease, box-shadow 0.3s ease;
+        }
+        .hover-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -12px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Animated progress bar init */
+        .progress-bar-fill {
+            width: 0%;
+            transition: width 0.8s cubic-bezier(0.22, 0.97, 0.36, 1.02);
+        }
+
+        /* Loading fade-in for all sections */
+        .animate-on-scroll {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.7s ease, transform 0.7s ease;
+        }
+        .animate-on-scroll.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Interactive button ripple */
+        .ripple-btn {
+            position: relative;
+            overflow: hidden;
+        }
+        .ripple-btn:after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.5);
+            transform: translate(-50%, -50%);
+            transition: width 0.4s, height 0.4s;
+        }
+        .ripple-btn:active:after {
+            width: 200px;
+            height: 200px;
+            opacity: 0;
+        }
+
+        /* image floating animation */
+        .profile-img-wrapper {
+            animation: float 5s ease-in-out infinite;
+        }
+
+        /* Responsive grid improvements */
+        @media (max-width: 768px) {
+            .container-padding {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-darkBg text-slate-800 dark:text-slate-100 transition-colors duration-500 overflow-x-hidden">
+
+<div class="max-w-7xl mx-auto p-4 md:p-8 container-padding">
+
+    <!-- Header / Theme Toggle with micro animation -->
+    <div class="flex justify-end mb-6 animate-fade-in">
+        <div class="bg-gray-200 dark:bg-slate-800 p-1 rounded-full flex items-center shadow-md backdrop-blur-sm">
+            <button id="lightBtn" onclick="setTheme('light')" class="px-4 py-1 rounded-full text-xs font-bold transition-all duration-300 bg-white shadow-sm text-blue-600 hover:scale-105">Light</button>
+            <button id="darkBtn" onclick="setTheme('dark')" class="px-4 py-1 rounded-full text-xs font-bold transition-all duration-300 text-gray-500 hover:scale-105">Dark</button>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+        <!-- LEFT COLUMN: Profile Info with staggered animation -->
+        <div class="lg:col-span-3 flex flex-col items-center lg:items-start space-y-6 animate-on-scroll" id="leftCol">
+            <div class="relative profile-img-wrapper">
+                <img src="https://via.placeholder.com/200" th:src="${profileImageUrl}" alt="Profile" class="w-48 h-48 rounded-full border-4 border-white dark:border-slate-700 shadow-xl object-cover transition-all duration-300 hover:scale-105 hover:shadow-2xl">
+                <div class="absolute top-4 right-4 w-4 h-4 bg-red-500 rounded-full border-2 border-white animate-pulse"></div>
+            </div>
+
+            <div class="text-center lg:text-left">
+                <h1 class="text-3xl font-bold bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 bg-clip-text text-transparent" th:text="${profileName}">Sachin Raj</h1>
+                <p class="text-blue-600 font-medium mt-1 tracking-wide" th:text="${jobTitle}">Senior UX Designer</p>
+            </div>
+
+            <div class="space-y-4 w-full">
+                <div class="flex items-center gap-3 text-sm group hover:translate-x-1 transition-transform">
+                    <i class="far fa-envelope text-gray-400 group-hover:text-blue-500"></i>
+                    <span th:text="${email}">sachinsaketham@gmail.com</span>
+                </div>
+                <div class="flex items-center gap-3 text-sm group hover:translate-x-1 transition-transform">
+                    <i class="fas fa-mobile-alt text-gray-400 group-hover:text-blue-500"></i>
+                    <span th:text="${phone}">8281382083</span>
+                </div>
+                <div class="flex items-center gap-3 text-sm group hover:translate-x-1 transition-transform">
+                    <i class="fas fa-map-marker-alt text-gray-400 group-hover:text-blue-500"></i>
+                    <span th:text="${location}">Kochi</span>
+                </div>
+            </div>
+
+            <button class="ripple-btn w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg transition-all duration-300 transform hover:scale-[1.02] active:scale-95">
+                <i class="fas fa-download animate-bounce"></i> Download Resume
+            </button>
+
+            <div class="flex gap-4 pt-2">
+                <a href="#" class="w-12 h-12 bg-white dark:bg-darkCard shadow-sm rounded-xl flex items-center justify-center text-xl hover:text-blue-600 transition-all duration-300 hover:scale-110 hover:shadow-md">
+                    <i class="fab fa-behance"></i>
+                </a>
+                <a href="#" class="w-12 h-12 bg-white dark:bg-darkCard shadow-sm rounded-xl flex items-center justify-center text-xl hover:text-blue-600 transition-all duration-300 hover:scale-110 hover:shadow-md">
+                    <i class="fab fa-linkedin-in"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- MIDDLE COLUMN: About & Experience with scroll animations -->
+        <div class="lg:col-span-6 space-y-10">
+            <section class="animate-on-scroll">
+                <h2 class="text-2xl font-bold mb-4 relative inline-block after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-12 after:h-1 after:bg-blue-500 after:rounded-full after:-mb-2">About Me</h2>
+                <p class="text-slate-500 dark:text-slate-400 leading-relaxed mt-4" th:text="${aboutDescription}">
+                    I am a Usability Analyst, Researcher and Designer with 5+ years of experience... I Help Industries, Companies, Professionals and Individuals to Excel and Boost their identity.
+                </p>
+            </section>
+
+            <section class="animate-on-scroll">
+                <h2 class="text-2xl font-bold mb-6 relative inline-block after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-12 after:h-1 after:bg-blue-500 after:rounded-full after:-mb-2">Current-Status</h2>
+                <div class="bg-white dark:bg-darkCard p-6 rounded-2xl flex justify-between items-center shadow-md hover:shadow-xl transition-all duration-300 transform hover:scale-[1.01] group">
+                    <div>
+                        <h3 class="font-bold text-xl" th:text="${expTitle}">Higher Studies</h3>
+                        <p class="text-sm text-gray-400 mt-1">B.TECH IN CSE • 2023 - Present</p>
+                    </div>
+                    <span class="bg-blue-50 dark:bg-blue-900/30 text-blue-600 px-4 py-1.5 rounded-full text-xs font-bold animate-pulse-glow">🎯 GATE</span>
+                </div>
+            </section>
+
+            <!-- Expertise Grid - animated cards -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5">
+                <!-- Dynamic Thymeleaf iteration with animation -->
+                <div th:each="skill, iterStat : ${expertiseList}" class="hover-card bg-white dark:bg-darkCard p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 flex flex-col items-center transition-all duration-300 cursor-pointer animate-on-scroll" style="transition-delay: calc(0.05s * ${iterStat.index})">
+                    <div class="w-12 h-12 mb-3 flex items-center justify-center text-2xl text-gray-500 group-hover:text-blue-500 transition-colors">
+                        <i class="fas" th:classappend="${skill.icon}"></i>
+                    </div>
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-gray-600 dark:text-gray-400" th:text="${skill.name}">User Research</span>
+                </div>
+
+                <!-- Static fallback examples (matching image) with animation -->
+                <div class="hover-card bg-white dark:bg-darkCard p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 flex flex-col items-center transition-all duration-300 animate-on-scroll">
+                    <i class="fas fa-search text-2xl text-gray-400 mb-2"></i>
+                    <span class="text-[10px] font-bold text-gray-500">USER RESEARCH</span>
+                </div>
+                <div class="hover-card bg-white dark:bg-darkCard p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 flex flex-col items-center transition-all duration-300 animate-on-scroll">
+                    <i class="fas fa-compass text-2xl text-gray-400 mb-2"></i>
+                    <span class="text-[10px] font-bold text-gray-500">IA</span>
+                </div>
+                <div class="hover-card bg-white dark:bg-darkCard p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 flex flex-col items-center transition-all duration-300 animate-on-scroll">
+                    <i class="fas fa-pencil-ruler text-2xl text-gray-400 mb-2"></i>
+                    <span class="text-[10px] font-bold text-gray-500">WIREFRAMING</span>
+                </div>
+                <div class="hover-card bg-white dark:bg-darkCard p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 flex flex-col items-center transition-all duration-300 animate-on-scroll">
+                    <i class="fas fa-pen-nib text-2xl text-gray-400 mb-2"></i>
+                    <span class="text-[10px] font-bold text-gray-500">PROTOTYPING</span>
+                </div>
+            </div>
+
+
+        </div>
+
+        <!-- RIGHT COLUMN: Tools Scrollable with animated progress bars -->
+        <div class="lg:col-span-3 animate-on-scroll">
+            <h2 class="text-2xl font-bold mb-6 relative inline-block after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-12 after:h-1 after:bg-blue-500 after:rounded-full after:-mb-2">Tools & Skills</h2>
+            <div class="tools-scroll max-h-[600px] overflow-y-auto pr-4 space-y-8 scroll-smooth">
+
+                <!-- Dynamic tool items with animated proficiency bars -->
+                <div th:each="tool, iterStat : ${toolsList}" class="space-y-2 group transition-all duration-300" th:data-proficiency="${tool.proficiency}">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-white dark:bg-darkCard flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
+                            <img th:src="${tool.iconPath}" class="w-6 h-6" alt="tool icon">
+                        </div>
+                        <span class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide group-hover:text-blue-500 transition-colors" th:text="${tool.name}">Adobe Photoshop</span>
+                    </div>
+                    <div class="w-full bg-gray-200 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
+                        <div class="progress-fill bg-gradient-to-r from-cyan-400 to-blue-500 h-full rounded-full" th:style="'--target-width:' + ${tool.proficiency} + '%;'" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- Hardcoded premium tool set with advanced animations -->
+                <div class="space-y-2 group">
+                    <div class="flex items-center gap-3"><span class="text-[11px] font-bold text-gray-500 group-hover:text-orange-500 transition">ADOBE PHOTOSHOP</span></div>
+                    <div class="w-full bg-gray-200 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden"><div class="progress-fill bg-gradient-to-r from-cyan-400 to-blue-400 h-full rounded-full" data-width="85" style="width:0%"></div></div>
+                </div>
+                <div class="space-y-2 group">
+                    <div class="flex items-center gap-3"><span class="text-[11px] font-bold text-gray-500 group-hover:text-orange-500 transition">ADOBE ILLUSTRATOR</span></div>
+                    <div class="w-full bg-gray-200 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden"><div class="progress-fill bg-gradient-to-r from-orange-400 to-red-400 h-full rounded-full" data-width="70" style="width:0%"></div></div>
+                </div>
+                <div class="space-y-2 group">
+                    <div class="flex items-center gap-3"><span class="text-[11px] font-bold text-gray-500 group-hover:text-purple-500 transition">FIGMA</span></div>
+                    <div class="w-full bg-gray-200 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden"><div class="progress-fill bg-gradient-to-r from-purple-500 to-pink-500 h-full rounded-full" data-width="95" style="width:0%"></div></div>
+                </div>
+                <div class="space-y-2 group">
+                    <div class="flex items-center gap-3"><span class="text-[11px] font-bold text-gray-500 group-hover:text-yellow-600 transition">SKETCH</span></div>
+                    <div class="w-full bg-gray-200 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden"><div class="progress-fill bg-gradient-to-r from-yellow-500 to-amber-500 h-full rounded-full" data-width="60" style="width:0%"></div></div>
+                </div>
+                <div class="space-y-2 group">
+                    <div class="flex items-center gap-3"><span class="text-[11px] font-bold text-gray-500 group-hover:text-pink-500 transition">INVISION</span></div>
+                    <div class="w-full bg-gray-200 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden"><div class="progress-fill bg-gradient-to-r from-pink-400 to-rose-400 h-full rounded-full" data-width="45" style="width:0%"></div></div>
+                </div>
+                <div class="space-y-2 group">
+                    <div class="flex items-center gap-3"><span class="text-[11px] font-bold text-gray-500 group-hover:text-emerald-500 transition">AFTER EFFECTS</span></div>
+                    <div class="w-full bg-gray-200 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden"><div class="progress-fill bg-gradient-to-r from-emerald-400 to-teal-500 h-full rounded-full" data-width="50" style="width:0%"></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Theme handling with local storage
+    function setTheme(theme) {
+        const html = document.documentElement;
+        const lightBtn = document.getElementById('lightBtn');
+        const darkBtn = document.getElementById('darkBtn');
+
+        if (theme === 'dark') {
+            html.classList.add('dark');
+            localStorage.setItem('theme', 'dark');
+            darkBtn.classList.add('bg-white', 'shadow-sm', 'text-blue-600');
+            darkBtn.classList.remove('text-gray-500');
+            lightBtn.classList.remove('bg-white', 'shadow-sm', 'text-blue-600');
+            lightBtn.classList.add('text-gray-500');
+        } else {
+            html.classList.remove('dark');
+            localStorage.setItem('theme', 'light');
+            lightBtn.classList.add('bg-white', 'shadow-sm', 'text-blue-600');
+            lightBtn.classList.remove('text-gray-500');
+            darkBtn.classList.remove('bg-white', 'shadow-sm', 'text-blue-600');
+            darkBtn.classList.add('text-gray-500');
+        }
+    }
+
+    // Load saved theme
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+        setTheme('dark');
+    } else if (savedTheme === 'light') {
+        setTheme('light');
+    } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        setTheme('dark');
+    } else {
+        setTheme('light');
+    }
+
+    // Intersection Observer for scroll animations (fade-up on elements)
+    const animatedElements = document.querySelectorAll('.animate-on-scroll');
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.1, rootMargin: "0px 0px -20px 0px" });
+
+    animatedElements.forEach(el => observer.observe(el));
+
+    // Animate progress bars when they come into view
+    const progressBars = document.querySelectorAll('.progress-fill');
+    const progressObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const bar = entry.target;
+                let targetWidth = bar.getAttribute('data-width');
+                if (!targetWidth && bar.style.getPropertyValue('--target-width')) {
+                    targetWidth = bar.style.getPropertyValue('--target-width').replace('%', '');
+                }
+                if (targetWidth) {
+                    bar.style.width = targetWidth + '%';
+                } else {
+                    // fallback for thymeleaf dynamic content
+                    const computedWidth = getComputedStyle(bar).getPropertyValue('--target-width');
+                    if (computedWidth) {
+                        bar.style.width = computedWidth;
+                    } else {
+                        bar.style.width = '75%'; // default for demo
+                    }
+                }
+                progressObserver.unobserve(bar);
+            }
+        });
+    }, { threshold: 0.3 });
+
+    progressBars.forEach(bar => progressObserver.observe(bar));
+
+    // manually set fallback for progress bars if not observed immediately
+    setTimeout(() => {
+        document.querySelectorAll('.progress-fill').forEach(bar => {
+            if (bar.style.width === '0%' || bar.style.width === '') {
+                const dataWidth = bar.getAttribute('data-width');
+                if (dataWidth) bar.style.width = dataWidth + '%';
+                else if (bar.style.getPropertyValue('--target-width')) {
+                    bar.style.width = bar.style.getPropertyValue('--target-width');
+                }
+            }
+        });
+    }, 300);
+
+    // Hover interaction for tool items
+    const toolItems = document.querySelectorAll('.tools-scroll .space-y-2');
+    toolItems.forEach(item => {
+        item.addEventListener('mouseenter', () => {
+            item.style.transform = 'translateX(5px)';
+        });
+        item.addEventListener('mouseleave', () => {
+            item.style.transform = 'translateX(0)';
+        });
+    });
+
+    // Download button ripple + alert simulation (optional)
+    const downloadBtn = document.querySelector('button:has(.fa-download)');
+    if (downloadBtn) {
+        downloadBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            // simulate smooth feedback
+            downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Downloading...';
+            setTimeout(() => {
+                downloadBtn.innerHTML = '<i class="fas fa-download"></i> Download Resume';
+                alert('✨ Resume download started (demo) — you can integrate real PDF link.');
+            }, 1000);
+        });
+    }
+
+    // Responsive touch of glass morphism on cards
+    const allCards = document.querySelectorAll('.bg-white, .bg-darkCard');
+    allCards.forEach(card => {
+        card.addEventListener('mousemove', (e) => {
+            if (window.innerWidth > 768) {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                const rotateX = (y - centerY) / 25;
+                const rotateY = (centerX - x) / 25;
+                card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-2px)`;
+            }
+        });
+        card.addEventListener('mouseleave', () => {
+            card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0px)';
+        });
+    });
+
+    // Add small floating icons animation in background? subtle micro-interactions
+    console.log('✨ Responsive & animated portfolio loaded — with smooth scroll & dynamic theme');
+</script>
+</body>
+</html>
