@@ -1,21 +1,20 @@
-# Use an official OpenJDK 21 image
-FROM eclipse-temurin:21-jdk-alpine
+# Stage 1: Build the application
+FROM maven:3.9.6-eclipse-temurin-21 AS build
 
-# Set the working directory inside the container
 WORKDIR /app
 
-# Copy the Maven-built jar into the container
-COPY target/newportfolio-0.0.1-SNAPSHOT.jar app.jar
+COPY pom.xml .
+COPY src ./src
 
-# Expose the port your Spring Boot app runs on
+RUN mvn clean package -DskipTests
+
+# Stage 2: Run the application
+FROM eclipse-temurin:21-jdk-alpine
+
+WORKDIR /app
+
+COPY --from=build /app/target/newportfolio-0.0.1-SNAPSHOT.jar app.jar
+
 EXPOSE 8080
 
-# Use environment variables for DB and MAIL credentials
-ENV DB_URL=${DB_URL}
-ENV DB_USERNAME=${DB_USERNAME}
-ENV DB_PASSWORD=${DB_PASSWORD}
-ENV MAIL_USERNAME=${MAIL_USERNAME}
-ENV MAIL_PASSWORD=${MAIL_PASSWORD}
-
-# Run the jar file
 ENTRYPOINT ["java", "-jar", "app.jar"]
