@@ -42,24 +42,17 @@ public class homeController {
     public String homeview(Model model) {
 
 
-
         long totalPageViews = visitService.incrementCount("index");
 
-        // 2. Generate Random Happy Clients (between 100 and 5,000)
-        int totalHappyClients = ThreadLocalRandom.current().nextInt(100, 5000);
+        model.addAttribute("totalPageViews", totalPageViews);
 
-        // 3. Generate Random Contact Applications (between 50 and 1,000)
-        int totalContactApps = ThreadLocalRandom.current().nextInt(50, 1000);
+        // other attributes
+        model.addAttribute("totalHappyClients", ThreadLocalRandom.current().nextInt(100, 5000));
+        model.addAttribute("totalContactApps", ThreadLocalRandom.current().nextInt(50, 1000));
 
-        // 4. Generate Random Avg Rating (between 3.5 and 5.0)
-        // We calculate it then round to 1 decimal place
         double rawRating = ThreadLocalRandom.current().nextDouble(3.5, 5.0);
         double avgRating = Math.round(rawRating * 10.0) / 10.0;
 
-        // Pass variables to Thymeleaf Model
-        model.addAttribute("totalPageViews", totalPageViews);
-        model.addAttribute("totalHappyClients", totalHappyClients);
-        model.addAttribute("totalContactApps", totalContactApps);
         model.addAttribute("avgRating", avgRating);
 
         return "index";

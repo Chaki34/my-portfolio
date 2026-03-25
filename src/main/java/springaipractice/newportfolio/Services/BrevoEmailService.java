@@ -1,6 +1,7 @@
 package springaipractice.newportfolio.Services;
 
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -10,21 +11,25 @@ import org.springframework.web.client.RestTemplate;
 @Service
 public class BrevoEmailService {
 
-    @Value("${BREVO_API_KEY}")
-    private String API_KEY;
+    @Autowired
+    private Environment env;
 
     private final String URL = "https://api.brevo.com/v3/smtp/email";
+    private final String SENDER_EMAIL = "debmalyachaki5@gmail.com";
 
-    private final String SENDER_EMAIL = "debmalyachaki5@gmail.com"; // must be verified in Brevo
+    private final RestTemplate restTemplate = new RestTemplate();
 
-    private RestTemplate restTemplate = new RestTemplate();
+    // ✅ ADD THIS METHOD INSIDE THE CLASS
+    private String getApiKey() {
+        return env.getProperty("BREVO_API_KEY");
+    }
 
-    // ✅ 1. Send confirmation email to USER
+    // ✅ USER EMAIL
     public void sendConfirmationEmail(String toEmail, String name) {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("api-key", API_KEY);
+        headers.set("api-key", getApiKey());
 
         String body = """
         {
@@ -37,20 +42,15 @@ public class BrevoEmailService {
 
         HttpEntity<String> request = new HttpEntity<>(body, headers);
 
-        try {
-            restTemplate.postForEntity(URL, request, String.class);
-        } catch (Exception e) {
-            System.out.println("USER EMAIL ERROR:");
-            e.printStackTrace();
-        }
+        restTemplate.postForEntity(URL, request, String.class);
     }
 
-    // ✅ 2. Send notification email to ADMIN
+    // ✅ ADMIN EMAIL
     public void notifyAdmin(String name, String email, String subject, String message) {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("api-key", API_KEY);
+        headers.set("api-key", getApiKey());
 
         String body = """
         {
@@ -67,11 +67,6 @@ public class BrevoEmailService {
 
         HttpEntity<String> request = new HttpEntity<>(body, headers);
 
-        try {
-            restTemplate.postForEntity(URL, request, String.class);
-        } catch (Exception e) {
-            System.out.println("ADMIN EMAIL ERROR:");
-            e.printStackTrace();
-        }
+        restTemplate.postForEntity(URL, request, String.class);
     }
 }

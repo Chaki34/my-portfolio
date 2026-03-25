@@ -6,6 +6,18 @@ import jakarta.persistence.Id;
 @Entity
 public class PageVisit {
 
+    @Id
+    private String pageName;
+
+    private long visitCount;
+
+    public PageVisit() {}
+
+    public PageVisit(String pageName, long visitCount) {
+        this.pageName = pageName;
+        this.visitCount = visitCount;
+    }
+
     public String getPageName() {
         return pageName;
     }
@@ -21,11 +33,4 @@ public class PageVisit {
     public void setVisitCount(long visitCount) {
         this.visitCount = visitCount;
     }
-
-    @Id
-    private String pageName;
-
-    private long visitCount;
-
-    // getters & setters
 }
