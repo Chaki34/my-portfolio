@@ -8,6 +8,8 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.*;
+
 @Service
 public class BrevoEmailService {
 
@@ -64,25 +66,37 @@ public class BrevoEmailService {
         }
     }
 
-    // ✅ ADMIN EMAIL
     public void notifyAdmin(String name, String email, String subject, String message) {
+
         try {
             HttpHeaders headers = buildHeaders();
 
-            String body = """
-            {
-              "sender": {"name": "Portfolio", "email": "%s"},
-              "to": [{"email": "%s"}],
-              "subject": "New Contact Form Submission",
-              "htmlContent": "<h3>New Message Received</h3>
-                              <p><b>Name:</b> %s</p>
-                              <p><b>Email:</b> %s</p>
-                              <p><b>Subject:</b> %s</p>
-                              <p><b>Message:</b><br>%s</p>"
-            }
-            """.formatted(SENDER_EMAIL, SENDER_EMAIL, name, email, subject, message);
+            // Build request payload as a Map (safe JSON)
+            Map<String, Object> requestBody = new HashMap<>();
 
-            HttpEntity<String> request = new HttpEntity<>(body, headers);
+            Map<String, String> sender = new HashMap<>();
+            sender.put("name", "Portfolio");
+            sender.put("email", SENDER_EMAIL);
+
+            Map<String, String> toEmail = new HashMap<>();
+            toEmail.put("email", SENDER_EMAIL);
+
+            List<Map<String, String>> toList = new ArrayList<>();
+            toList.add(toEmail);
+
+            requestBody.put("sender", sender);
+            requestBody.put("to", toList);
+            requestBody.put("subject", "New Contact Form Submission");
+
+            String htmlContent = "<h3>New Message Received</h3>"
+                    + "<p><b>Name:</b> " + name + "</p>"
+                    + "<p><b>Email:</b> " + email + "</p>"
+                    + "<p><b>Subject:</b> " + subject + "</p>"
+                    + "<p><b>Message:</b><br>" + message + "</p>";
+
+            requestBody.put("htmlContent", htmlContent);
+
+            HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
 
             restTemplate.postForEntity(URL, request, String.class);
 
