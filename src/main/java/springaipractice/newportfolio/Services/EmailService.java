@@ -27,10 +27,11 @@ public class EmailService {
                         "Best regards,\nYour Company"
         );
 
-        try { // ✅ SAFETY ADDED (prevents crash)
+        try {
             mailSender.send(message);
         } catch (Exception e) {
-            System.out.println("EMAIL ERROR (USER): " + e.getMessage());
+            System.out.println("EMAIL ERROR (USER):");
+            e.printStackTrace();
         }
     }
 
@@ -48,10 +49,11 @@ public class EmailService {
                         "Message: " + contact.getMessage()
         );
 
-        try { // ✅ SAFETY ADDED
+        try {
             mailSender.send(msg);
         } catch (Exception e) {
             System.out.println("EMAIL ERROR (ADMIN): " + e.getMessage());
+            e.printStackTrace();
         }
     }
 }
