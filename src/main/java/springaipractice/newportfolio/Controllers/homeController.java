@@ -4,15 +4,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import springaipractice.newportfolio.Models.Certificate;
-import springaipractice.newportfolio.Models.Contact;
-import springaipractice.newportfolio.Models.Skill;
-import springaipractice.newportfolio.Models.Tool;
+import springaipractice.newportfolio.Models.*;
 import springaipractice.newportfolio.Repos.ContactRepository;
-import springaipractice.newportfolio.Services.BrevoEmailService;
-import springaipractice.newportfolio.Services.EmailService;
-import springaipractice.newportfolio.Services.RESENDAPI_EmailService;
-import springaipractice.newportfolio.Services.VisitService;
+import springaipractice.newportfolio.Services.*;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -30,10 +24,14 @@ public class homeController {
 
     private BrevoEmailService brevoEmailService;
 
-    public homeController(VisitService visitService, ContactRepository contactRepository , BrevoEmailService brevoEmailService) {
+
+    private FeedbackService feedbackService;
+
+    public homeController(VisitService visitService, ContactRepository contactRepository , BrevoEmailService brevoEmailService , FeedbackService feedbackService) {
         this.visitService = visitService;
         this.contactRepository = contactRepository;
         this.brevoEmailService = brevoEmailService;
+        this.feedbackService = feedbackService;
 
     }
 
@@ -196,5 +194,12 @@ public class homeController {
         }
 
         return response;
+    }
+
+    @PostMapping("/feedback")
+    @ResponseBody
+    public String submitFeedback(@RequestBody FeedbackRequest request) {
+        feedbackService.saveFeedback(request.getRating());
+        return "Feedback submitted successfully!";
     }
 }
