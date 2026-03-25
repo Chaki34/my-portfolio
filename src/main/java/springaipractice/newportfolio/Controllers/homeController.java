@@ -38,7 +38,7 @@ public class homeController {
     }
 
 
-    @GetMapping("/index")
+    @GetMapping({"/", "/index"})
     public String homeview(Model model) {
 
 
