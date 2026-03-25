@@ -37,12 +37,7 @@ public class homeController {
 
     }
 
-    @GetMapping("/")
-    public String rootRedirect() {
-        return "forward:/v1/index";
-    }
-
-
+    
     @GetMapping("/index")
     public String homeview(Model model) {
 
