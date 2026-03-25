@@ -6,7 +6,14 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import springaipractice.newportfolio.Models.Contact;
 
-@Service
+
+/**
+ * @deprecated Replaced by RESENDAPI_EmailService.
+ * Not used because SMTP (Gmail) fails on cloud platforms like Render.
+ */
+
+//@Service
+@Deprecated
 public class EmailService {
 
     @Autowired

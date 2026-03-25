@@ -28,7 +28,7 @@ public class homeController {
 
     private final RESENDAPI_EmailService resendapiemailService;
 
-    public homeController(VisitService visitService, ContactRepository contactRepository, EmailService emailService, RESENDAPI_EmailService resendapiemailService) {
+    public homeController(VisitService visitService, ContactRepository contactRepository, RESENDAPI_EmailService resendapiemailService) {
         this.visitService = visitService;
         this.contactRepository = contactRepository;
         this.resendapiemailService = resendapiemailService;
@@ -151,37 +151,54 @@ public class homeController {
     public Map<String, String> handleContact(
             @RequestParam String name,
             @RequestParam String email,
-            @RequestParam String subject,
+            @RequestParam(required = false) String subject,
             @RequestParam String message) {
 
-        Contact contact = new Contact();
-        contact.setName(name);
-        contact.setEmail(email);
-        contact.setSubject(subject);
-        contact.setMessage(message);
-
-
-        contactRepository.save(contact);
-
-        // ✅ Send email to user
-        try {
-            resendapiemailService.sendConfirmationEmail(email, name);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        // ✅ Send email to admin (UPDATED CALL)
-        try {
-            resendapiemailService.notifyAdmin(name, email, subject, message);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
         Map<String, String> response = new HashMap<>();
-        response.put("status", "success");
-        response.put("message", "Message sent successfully");
+
+        try {
+            // ✅ Handle null/empty subject
+            if (subject == null || subject.trim().isEmpty()) {
+                subject = "General Inquiry";
+            }
+
+            // ✅ Create and save contact
+            Contact contact = new Contact();
+            contact.setName(name);
+            contact.setEmail(email);
+            contact.setSubject(subject);
+            contact.setMessage(message);
+
+            contactRepository.save(contact);
+
+            // ✅ Send email to user
+            try {
+                resendapiemailService.sendConfirmationEmail(email, name);
+            } catch (Exception e) {
+                System.out.println("User email failed");
+                e.printStackTrace();
+            }
+
+            // ✅ Send email to admin
+            try {
+                resendapiemailService.notifyAdmin(name, email, subject, message);
+            } catch (Exception e) {
+                System.out.println("Admin email failed");
+                e.printStackTrace();
+            }
+
+            // ✅ Success response
+            response.put("status", "success");
+            response.put("message", "Message sent successfully");
+
+        } catch (Exception e) {
+            // ❌ Handle any unexpected error
+            e.printStackTrace();
+
+            response.put("status", "error");
+            response.put("message", "Something went wrong. Please try again.");
+        }
 
         return response;
     }
-
 }
