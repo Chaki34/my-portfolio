@@ -11,7 +11,9 @@ import org.springframework.web.client.RestTemplate;
 import java.util.HashMap;
 import java.util.Map;
 
-@Service
+//@Service
+
+@Deprecated
 public class RESENDAPI_EmailService {
 
     @Autowired

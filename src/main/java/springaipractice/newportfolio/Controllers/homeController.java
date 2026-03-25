@@ -9,6 +9,7 @@ import springaipractice.newportfolio.Models.Contact;
 import springaipractice.newportfolio.Models.Skill;
 import springaipractice.newportfolio.Models.Tool;
 import springaipractice.newportfolio.Repos.ContactRepository;
+import springaipractice.newportfolio.Services.BrevoEmailService;
 import springaipractice.newportfolio.Services.EmailService;
 import springaipractice.newportfolio.Services.RESENDAPI_EmailService;
 import springaipractice.newportfolio.Services.VisitService;
@@ -26,12 +27,13 @@ public class homeController {
 
     private final ContactRepository contactRepository;
 
-    private final RESENDAPI_EmailService resendapiemailService;
 
-    public homeController(VisitService visitService, ContactRepository contactRepository, RESENDAPI_EmailService resendapiemailService) {
+    private BrevoEmailService brevoEmailService;
+
+    public homeController(VisitService visitService, ContactRepository contactRepository , BrevoEmailService brevoEmailService) {
         this.visitService = visitService;
         this.contactRepository = contactRepository;
-        this.resendapiemailService = resendapiemailService;
+        this.brevoEmailService = brevoEmailService;
 
     }
 
@@ -171,20 +173,19 @@ public class homeController {
 
             contactRepository.save(contact);
 
-            // ✅ Send email to user
+
+            // Send email to user
             try {
-                resendapiemailService.sendConfirmationEmail(email, name);
+                brevoEmailService.sendConfirmationEmail(email, name);
             } catch (Exception e) {
                 System.out.println("User email failed");
-                e.printStackTrace();
             }
 
-            // ✅ Send email to admin
+// Send email to admin
             try {
-                resendapiemailService.notifyAdmin(name, email, subject, message);
+                brevoEmailService.notifyAdmin(name, email, subject, message);
             } catch (Exception e) {
                 System.out.println("Admin email failed");
-                e.printStackTrace();
             }
 
             // ✅ Success response

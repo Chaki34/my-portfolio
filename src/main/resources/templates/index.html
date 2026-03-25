@@ -4478,8 +4478,8 @@
                     <div class="stat-icon">👁️</div>
 
                     <h2 class="stat-number"
-                        th:attr="data-target=${totalPageViews}"
-                        data-type="number"
+                        th:data-target="${totalPageViews}"
+                        data-value="10341"
                         id="stat-pageviews">0</h2>
 
                     <p class="stat-label">Total Page Views</p>
@@ -5969,31 +5969,30 @@
     }
 
 function getTarget(el) {
-    let raw = null;
 
+    const dbValue = el.getAttribute('data-target');   // from controller
+    const fallbackValue = el.getAttribute('data-value'); // static fallback
 
-    if (el.id === 'stat-pageviews') {
-        raw = el.getAttribute('data-target'); // value set by Thymeleaf
+    let value;
+
+    // ✅ Use DB value if valid (IMPORTANT FIX)
+    if (dbValue !== null && dbValue !== "" && !isNaN(dbValue)) {
+        value = parseFloat(dbValue);
     }
-
-
-    if (!raw && el.getAttribute('data-value')) {
-        raw = el.getAttribute('data-value');
+    // ✅ Otherwise fallback
+    else if (fallbackValue !== null && fallbackValue !== "" && !isNaN(fallbackValue)) {
+        value = parseFloat(fallbackValue);
+        console.warn("Using fallback for:", el.id);
     }
-
-    let value = parseFloat(raw);
-
-    // ✅ fallback (unchanged for others)
-    if (isNaN(value)) {
-        if (el.id === 'stat-pageviews') value = 10341; // DB fallback
-        else if (el.id === 'stat-happyclients') value = 894;
-        else if (el.id === 'stat-contactapps') value = 2563;
-        else if (el.id === 'stat-avgRating') value = 4.85;
-        else value = 0;
+    // ✅ Final safety
+    else {
+        value = 0;
+        console.error("No valid value found for:", el.id);
     }
 
     return value;
 }
+
     // Check if decimal
     function isDecimal(el, value) {
         return el.getAttribute('data-type') === 'decimal' || value % 1 !== 0;
