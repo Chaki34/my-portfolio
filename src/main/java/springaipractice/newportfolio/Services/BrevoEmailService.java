@@ -19,54 +19,78 @@ public class BrevoEmailService {
 
     private final RestTemplate restTemplate = new RestTemplate();
 
-    // ✅ ADD THIS METHOD INSIDE THE CLASS
+    // ✅ Get API key safely
     private String getApiKey() {
-        return env.getProperty("BREVO_API_KEY");
+        String key = env.getProperty("BREVO_API_KEY");
+
+        if (key == null || key.isBlank()) {
+            throw new RuntimeException("BREVO_API_KEY is missing in environment variables");
+        }
+
+        return key;
+    }
+
+    // ✅ Common headers builder
+    private HttpHeaders buildHeaders() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("api-key", getApiKey());
+        return headers;
     }
 
     // ✅ USER EMAIL
     public void sendConfirmationEmail(String toEmail, String name) {
+        try {
+            HttpHeaders headers = buildHeaders();
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("api-key", getApiKey());
+            String body = """
+            {
+              "sender": {"name": "Portfolio", "email": "%s"},
+              "to": [{"email": "%s"}],
+              "subject": "Thank you for contacting us",
+              "htmlContent": "<p>Dear %s,<br><br>Thanks for reaching out! I will get back to you soon.<br><br>Best Regards,<br>Portfolio Team</p>"
+            }
+            """.formatted(SENDER_EMAIL, toEmail, name);
 
-        String body = """
-        {
-          "sender": {"name": "Portfolio", "email": "%s"},
-          "to": [{"email": "%s"}],
-          "subject": "Thank you for contacting us",
-          "htmlContent": "<p>Dear %s,<br><br>Thanks for reaching out! I will get back to you soon.<br><br>Best Regards,<br>Portfolio Team</p>"
+            HttpEntity<String> request = new HttpEntity<>(body, headers);
+
+            restTemplate.postForEntity(URL, request, String.class);
+
+            System.out.println("✅ User email sent successfully");
+
+        } catch (Exception e) {
+            System.out.println("❌ Failed to send user email");
+            e.printStackTrace();
         }
-        """.formatted(SENDER_EMAIL, toEmail, name);
-
-        HttpEntity<String> request = new HttpEntity<>(body, headers);
-
-        restTemplate.postForEntity(URL, request, String.class);
     }
 
     // ✅ ADMIN EMAIL
     public void notifyAdmin(String name, String email, String subject, String message) {
+        try {
+            HttpHeaders headers = buildHeaders();
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("api-key", getApiKey());
+            String body = """
+            {
+              "sender": {"name": "Portfolio", "email": "%s"},
+              "to": [{"email": "%s"}],
+              "subject": "New Contact Form Submission",
+              "htmlContent": "<h3>New Message Received</h3>
+                              <p><b>Name:</b> %s</p>
+                              <p><b>Email:</b> %s</p>
+                              <p><b>Subject:</b> %s</p>
+                              <p><b>Message:</b><br>%s</p>"
+            }
+            """.formatted(SENDER_EMAIL, SENDER_EMAIL, name, email, subject, message);
 
-        String body = """
-        {
-          "sender": {"name": "Portfolio", "email": "%s"},
-          "to": [{"email": "%s"}],
-          "subject": "New Contact Form Submission",
-          "htmlContent": "<h3>New Message Received</h3>
-                          <p><b>Name:</b> %s</p>
-                          <p><b>Email:</b> %s</p>
-                          <p><b>Subject:</b> %s</p>
-                          <p><b>Message:</b><br>%s</p>"
+            HttpEntity<String> request = new HttpEntity<>(body, headers);
+
+            restTemplate.postForEntity(URL, request, String.class);
+
+            System.out.println("✅ Admin email sent successfully");
+
+        } catch (Exception e) {
+            System.out.println("❌ Failed to send admin email");
+            e.printStackTrace();
         }
-        """.formatted(SENDER_EMAIL, SENDER_EMAIL, name, email, subject, message);
-
-        HttpEntity<String> request = new HttpEntity<>(body, headers);
-
-        restTemplate.postForEntity(URL, request, String.class);
     }
 }
