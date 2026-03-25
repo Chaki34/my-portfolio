@@ -172,6 +172,7 @@ public class homeController {
                 brevoEmailService.sendConfirmationEmail(email, name);
             } catch (Exception e) {
                 System.out.println("User email failed");
+                e.printStackTrace();
             }
 
 // Send email to admin
@@ -179,6 +180,7 @@ public class homeController {
                 brevoEmailService.notifyAdmin(name, email, subject, message);
             } catch (Exception e) {
                 System.out.println("Admin email failed");
+                e.printStackTrace();
             }
 
             // ✅ Success response
