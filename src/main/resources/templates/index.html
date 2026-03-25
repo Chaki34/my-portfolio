@@ -4476,12 +4476,12 @@
                 <!-- Total Page Views Card -->
                 <div class="stat-card">
                     <div class="stat-icon">👁️</div>
-                    <!-- th:data-target pulls the real number from Java controller, animated counter js will handle dynamic counting -->
+
                     <h2 class="stat-number"
-                        th:data-target="${totalPageViews}"
+                        th:attr="data-target=${totalPageViews}"
                         data-type="number"
-                        data-value="12458"
                         id="stat-pageviews">0</h2>
+
                     <p class="stat-label">Total Page Views</p>
                 </div>
 
@@ -5968,37 +5968,32 @@
         requestAnimationFrame(update);
     }
 
-    // Resolve target value safely (without breaking Thymeleaf)
-    function getTarget(el) {
-        let raw = null;
+function getTarget(el) {
+    let raw = null;
 
-        // Prefer Thymeleaf-rendered value if present at runtime
-        if (el.getAttribute('data-value')) {
-            raw = el.getAttribute('data-value');
-        }
 
-        // Fallback to th:data-target if Thymeleaf rendered it
-        if (!raw && el.getAttribute('th:data-target')) {
-            const thVal = el.getAttribute('th:data-target');
-            if (thVal && !thVal.includes('${') && !isNaN(parseFloat(thVal))) {
-                raw = thVal;
-            }
-        }
-
-        let value = parseFloat(raw);
-
-        // Final fallback (safe defaults)
-        if (isNaN(value)) {
-            if (el.id === 'stat-pageviews') value = 12458;
-            else if (el.id === 'stat-happyclients') value = 894;
-            else if (el.id === 'stat-contactapps') value = 2563;
-            else if (el.id === 'stat-avgRating') value = 4.85;
-            else value = 0;
-        }
-
-        return value;
+    if (el.id === 'stat-pageviews') {
+        raw = el.getAttribute('data-target'); // value set by Thymeleaf
     }
 
+
+    if (!raw && el.getAttribute('data-value')) {
+        raw = el.getAttribute('data-value');
+    }
+
+    let value = parseFloat(raw);
+
+    // ✅ fallback (unchanged for others)
+    if (isNaN(value)) {
+        if (el.id === 'stat-pageviews') value = 10341; // DB fallback
+        else if (el.id === 'stat-happyclients') value = 894;
+        else if (el.id === 'stat-contactapps') value = 2563;
+        else if (el.id === 'stat-avgRating') value = 4.85;
+        else value = 0;
+    }
+
+    return value;
+}
     // Check if decimal
     function isDecimal(el, value) {
         return el.getAttribute('data-type') === 'decimal' || value % 1 !== 0;
@@ -6170,15 +6165,15 @@
 
 const result = await response.json();
 
-if (response.ok && result.status === "success") {
+if (response.ok) {
     showMessage(`✓ Secure message sent! Hi ${name}, I'll get back to you within 24 hours. 🇮🇳`, true);
     form.reset();
 } else {
-    showMessage("⚠️ Server error. Please try again.", false);
+    showMessage(result.message || "⚠️ Server error. Please try again.", false);
 }
 
     } catch (err) {
-        showMessage("⚠️ Delivery failed. Please try again or email directly.", false);
+        showMessage("⚠️ Delivery failed. Please try again or email directly. on debmalyachaki5@gmail.com", false);
         console.error(err);
     } finally {
         submitBtn.innerHTML = originalBtnText;

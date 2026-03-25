@@ -10,6 +10,7 @@ import springaipractice.newportfolio.Models.Skill;
 import springaipractice.newportfolio.Models.Tool;
 import springaipractice.newportfolio.Repos.ContactRepository;
 import springaipractice.newportfolio.Services.EmailService;
+import springaipractice.newportfolio.Services.RESENDAPI_EmailService;
 import springaipractice.newportfolio.Services.VisitService;
 
 import java.time.LocalDate;
@@ -25,20 +26,20 @@ public class homeController {
 
     private final ContactRepository contactRepository;
 
-    private final EmailService emailService;
+    private final RESENDAPI_EmailService resendapiemailService;
 
-    public homeController(VisitService visitService, ContactRepository contactRepository, EmailService emailService) {
+    public homeController(VisitService visitService, ContactRepository contactRepository, EmailService emailService, RESENDAPI_EmailService resendapiemailService) {
         this.visitService = visitService;
         this.contactRepository = contactRepository;
-        this.emailService = emailService;
+        this.resendapiemailService = resendapiemailService;
+
     }
 
 
     @GetMapping("/index")
     public String homeview(Model model) {
 
-//        // 1. Generate Random Page Views (between 10,000 and 100,000)
-//        long totalPageViews = ThreadLocalRandom.current().nextLong(10000, 100000);
+
 
         long totalPageViews = visitService.incrementCount("index");
 
@@ -134,14 +135,14 @@ public class homeController {
         model.addAttribute("toolsList", tools);
 
 
-        return "resume"; // This should match your .html filename in /templates/
+        return "resume";
     }
 
 
     @GetMapping("/certificates")
     public String showCertificates(Model model) {
 
-        return "certificates"; // corresponds to certificates.html in templates folder
+        return "certificates";
     }
 
 
@@ -159,18 +160,19 @@ public class homeController {
         contact.setSubject(subject);
         contact.setMessage(message);
 
-        contactRepository.save(contact);
 
         contactRepository.save(contact);
 
+        // ✅ Send email to user
         try {
-            emailService.sendConfirmationEmail(email, name);
+            resendapiemailService.sendConfirmationEmail(email, name);
         } catch (Exception e) {
             e.printStackTrace();
         }
 
+        // ✅ Send email to admin (UPDATED CALL)
         try {
-            emailService.notifyAdmin(contact);
+            resendapiemailService.notifyAdmin(name, email, subject, message);
         } catch (Exception e) {
             e.printStackTrace();
         }
