@@ -37,7 +37,7 @@ public class homeController {
 
     }
 
-    
+
     @GetMapping("/index")
     public String homeview(Model model) {
 
