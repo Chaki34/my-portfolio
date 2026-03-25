@@ -45,16 +45,29 @@ public class BrevoEmailService {
         try {
             HttpHeaders headers = buildHeaders();
 
-            String body = """
-            {
-              "sender": {"name": "Portfolio", "email": "%s"},
-              "to": [{"email": "%s"}],
-              "subject": "Thank you for contacting us",
-              "htmlContent": "<p>Dear %s,<br><br>Thanks for reaching out! I will get back to you soon.<br><br>Best Regards,<br>Portfolio Team</p>"
-            }
-            """.formatted(SENDER_EMAIL, toEmail, name);
+            Map<String, Object> requestBody = new HashMap<>();
 
-            HttpEntity<String> request = new HttpEntity<>(body, headers);
+            Map<String, String> sender = new HashMap<>();
+            sender.put("name", "Portfolio");
+            sender.put("email", SENDER_EMAIL);
+
+            Map<String, String> to = new HashMap<>();
+            to.put("email", toEmail);
+
+            List<Map<String, String>> toList = new ArrayList<>();
+            toList.add(to);
+
+            requestBody.put("sender", sender);
+            requestBody.put("to", toList);
+            requestBody.put("subject", "Thank you for contacting us");
+
+            String htmlContent = "<p>Dear " + name + ",<br><br>"
+                    + "Thanks for reaching out! I will get back to you soon.<br><br>"
+                    + "Best Regards,<br>Portfolio Team</p>";
+
+            requestBody.put("htmlContent", htmlContent);
+
+            HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
 
             restTemplate.postForEntity(URL, request, String.class);
 
@@ -66,23 +79,22 @@ public class BrevoEmailService {
         }
     }
 
+    // ✅ ADMIN EMAIL
     public void notifyAdmin(String name, String email, String subject, String message) {
-
         try {
             HttpHeaders headers = buildHeaders();
 
-            // Build request payload as a Map (safe JSON)
             Map<String, Object> requestBody = new HashMap<>();
 
             Map<String, String> sender = new HashMap<>();
             sender.put("name", "Portfolio");
             sender.put("email", SENDER_EMAIL);
 
-            Map<String, String> toEmail = new HashMap<>();
-            toEmail.put("email", SENDER_EMAIL);
+            Map<String, String> to = new HashMap<>();
+            to.put("email", SENDER_EMAIL);
 
             List<Map<String, String>> toList = new ArrayList<>();
-            toList.add(toEmail);
+            toList.add(to);
 
             requestBody.put("sender", sender);
             requestBody.put("to", toList);
