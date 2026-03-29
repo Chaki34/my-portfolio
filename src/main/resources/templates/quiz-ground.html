@@ -1,0 +1,270 @@
+<style>
+    body {
+        margin: 0;
+        background: #000;
+        font-family: Arial, sans-serif;
+        color: #fff;
+    }
+
+    .quiz-wrapper {
+        max-width: 800px;
+        margin: auto;
+        padding: 20px;
+    }
+
+    .progress-bar-bg {
+        width: 100%;
+        height: 8px;
+        background: #222;
+        border-radius: 10px;
+        overflow: hidden;
+        margin-bottom: 25px;
+    }
+
+    .progress-bar-fill {
+        height: 8px;
+        width: 0%;
+        background: #fff;
+        transition: 0.3s ease;
+    }
+
+    .quiz-container {
+        min-height: 100vh;
+    }
+
+    .question-box {
+        padding: 25px;
+        border: 1px solid #444;
+        border-radius: 10px;
+        background: #0a0a0a;
+        margin-top: 20px;
+    }
+
+    .option-btn {
+        display: block;
+        margin: 10px 0;
+        padding: 12px;
+        width: 100%;
+        background: #111;
+        border: 1px solid #555;
+        color: #fff;
+        cursor: pointer;
+        transition: 0.2s;
+        border-radius: 6px;
+        text-align: left;
+        font-size: 15px;
+    }
+
+    .option-btn:hover {
+        background: #fff;
+        color: #000;
+    }
+
+    .option-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .skip-btn {
+        background: #222 !important;
+        border: 1px dashed #666;
+    }
+
+    .center-msg {
+        text-align: center;
+        margin-top: 100px;
+        opacity: 0.7;
+    }
+</style>
+
+<div class="quiz-wrapper">
+
+    <div class="progress-bar-bg">
+        <div id="progressBar" class="progress-bar-fill"></div>
+    </div>
+
+    <div id="quizContainer" class="quiz-container">
+        <h2 class="center-msg">⏳ Generating Quiz...</h2>
+    </div>
+
+</div>
+
+<script>
+    let questions = [];
+    let currentIndex = 0;
+    let score = 0;
+    let userAnswers = [];
+
+    async function loadQuiz() {
+        const container = document.getElementById("quizContainer");
+
+        try {
+            const res = await fetch("/quiz-data", {
+                credentials: "include"
+            });
+
+            const text = await res.text();
+
+            if (!text || text.trim() === "") {
+                container.innerHTML = "<h2 class='center-msg'>⚠️ No quiz data found</h2>";
+                return;
+            }
+
+            let data;
+
+            try {
+                data = JSON.parse(text);
+                if (typeof data === "string") data = JSON.parse(data);
+            } catch (e) {
+                container.innerHTML = "<h2 class='center-msg'>⚠️ Invalid quiz data format</h2>";
+                return;
+            }
+
+            questions = data.questions || data;
+
+            if (!Array.isArray(questions)) {
+                container.innerHTML = "<h2 class='center-msg'>⚠️ Unexpected data format</h2>";
+                return;
+            }
+
+            currentIndex = 0;
+            score = 0;
+            userAnswers = [];
+
+            showQuestion();
+
+        } catch (err) {
+            console.error(err);
+            container.innerHTML = "<h2 class='center-msg'>⚠️ Network error</h2>";
+        }
+    }
+
+    function updateProgress() {
+        const progress = document.getElementById("progressBar");
+        const percent = (currentIndex / questions.length) * 100;
+        progress.style.width = percent + "%";
+    }
+
+    function showQuestion() {
+        const container = document.getElementById("quizContainer");
+
+        updateProgress();
+
+        if (currentIndex >= questions.length) {
+            showResult();
+            return;
+        }
+
+        const q = questions[currentIndex];
+
+        container.innerHTML = `
+            <div class="question-box">
+                <h3>${currentIndex + 1}. ${q.question}</h3>
+
+                ${(q.options || []).map((opt, i) => `
+                    <button class="option-btn"
+                        onclick="answer(this, ${i})"
+                        data-value="${opt}">
+                        ${String.fromCharCode(65 + i)}. ${opt}
+                    </button>
+                `).join("")}
+
+                <button class="option-btn skip-btn" onclick="skip()">
+                    Skip →
+                </button>
+            </div>
+        `;
+    }
+
+    function answer(btn, index) {
+
+        document.querySelectorAll(".option-btn").forEach(b => b.disabled = true);
+
+        const selectedText = btn.getAttribute("data-value");
+        const correct = questions[currentIndex]?.answer;
+
+        let status = "Wrong";
+
+        if (correct && selectedText.trim().toLowerCase() === correct.trim().toLowerCase()) {
+            score++;
+            status = "Correct";
+        }
+
+        userAnswers.push({
+            question: questions[currentIndex].question,
+            selected: `${String.fromCharCode(65 + index)} (${selectedText})`,
+            correct: correct,
+            status: status
+        });
+
+        setTimeout(next, 400);
+    }
+
+    function skip() {
+        userAnswers.push({
+            question: questions[currentIndex].question,
+            selected: "SKIPPED",
+            correct: questions[currentIndex].answer,
+            status: "Skipped"
+        });
+
+        next();
+    }
+
+    function next() {
+        currentIndex++;
+        showQuestion();
+    }
+
+    function showResult() {
+        const container = document.getElementById("quizContainer");
+
+        let html = `
+            <div class="question-box">
+                <h2>🎉 Quiz Completed</h2>
+                <h3>Score: ${score} / ${questions.length}</h3>
+                <hr style="border:1px solid #333; margin:15px 0;">
+        `;
+
+        userAnswers.forEach((a, i) => {
+
+            let color =
+                a.status === "Correct" ? "lightgreen" :
+                a.status === "Skipped" ? "orange" : "red";
+
+            html += `
+                <div style="margin-bottom:15px;">
+                    <p><b>Q${i + 1}:</b> ${a.question}</p>
+
+                    <p>Your Answer:
+                        <span style="color:${color}">
+                            ${a.selected}
+                        </span>
+                    </p>
+
+                    <p>Correct Answer:
+                        <span style="color:lightgreen">
+                            ${a.correct}
+                        </span>
+                    </p>
+
+                    <p>Status:
+                        <b style="color:${color}">
+                            ${a.status}
+                        </b>
+                    </p>
+
+                    <hr style="border:1px solid #222;">
+                </div>
+            `;
+        });
+
+        html += `</div>`;
+
+        container.innerHTML = html;
+
+        document.getElementById("progressBar").style.width = "100%";
+    }
+
+    loadQuiz();
+</script>

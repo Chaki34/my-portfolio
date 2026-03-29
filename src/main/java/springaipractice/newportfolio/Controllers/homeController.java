@@ -202,4 +202,21 @@ public class homeController {
         feedbackService.saveFeedback(request.getRating());
         return "Feedback submitted successfully!";
     }
+
+    @GetMapping("/quiz")
+    public String quizPage() {
+        return "Quiz"; // refers to quiz.html
+    }
+
+    @GetMapping("/quiz-ground")
+    public String quizPlayGround() {
+        return "quiz-ground";
+    }
 }
+
+
+
+
+
+
+
