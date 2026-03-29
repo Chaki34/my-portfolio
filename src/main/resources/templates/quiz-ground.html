@@ -176,29 +176,28 @@
         `;
     }
 
-    function answer(btn, index) {
+   function answer(btn, index) {
 
-        document.querySelectorAll(".option-btn").forEach(b => b.disabled = true);
+    document.querySelectorAll(".option-btn").forEach(b => b.disabled = true);
 
-        const selectedText = btn.getAttribute("data-value");
-        const correct = questions[currentIndex]?.answer;
+    const correctIndex = questions[currentIndex]?.answer;
 
-        let status = "Wrong";
+    let status = "Wrong";
 
-        if (correct && selectedText.trim().toLowerCase() === correct.trim().toLowerCase()) {
-            score++;
-            status = "Correct";
-        }
-
-        userAnswers.push({
-            question: questions[currentIndex].question,
-            selected: `${String.fromCharCode(65 + index)} (${selectedText})`,
-            correct: correct,
-            status: status
-        });
-
-        setTimeout(next, 400);
+    if (index === correctIndex) {
+        score++;
+        status = "Correct";
     }
+
+    userAnswers.push({
+        question: questions[currentIndex].question,
+        selected: `${String.fromCharCode(65 + index)} (${questions[currentIndex].options[index]})`,
+        correct: `${String.fromCharCode(65 + correctIndex)} (${questions[currentIndex].options[correctIndex]})`,
+        status: status
+    });
+
+    setTimeout(next, 400);
+}
 
     function skip() {
         userAnswers.push({

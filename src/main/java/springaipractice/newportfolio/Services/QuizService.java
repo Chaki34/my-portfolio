@@ -38,22 +38,34 @@ public class QuizService {
         }
 
         String prompt = """
-                Generate 10 MCQ questions in STRICT JSON format only.
+Generate 10 MCQ questions in STRICT JSON format only.
 
-                Format:
-                {
-                  "questions": [
-                    {
-                      "question": "",
-                      "options": ["A","B","C","D"],
-                      "answer": ""
-                    }
-                  ]
-                }
+IMPORTANT RULES (VERY IMPORTANT):
+1. "answer" must be INTEGER INDEX only (0, 1, 2, or 3)
+2. It must match correct option position in "options" array
+3. Do NOT return A/B/C/D or text as answer
+4. Do NOT add any explanation or markdown
 
-                Languages: %s
-                Difficulty: %s
-                """.formatted(languages, difficulty);
+Format:
+{
+  "questions": [
+    {
+      "question": "",
+      "options": ["Option A", "Option B", "Option C", "Option D"],
+      "answer": 0
+    }
+  ]
+}
+
+SCORING RULE:
+- 0 = first option
+- 1 = second option
+- 2 = third option
+- 3 = fourth option
+
+Languages: %s
+Difficulty: %s
+""".formatted(languages, difficulty);
 
         Map<String, Object> body = Map.of(
                 "model", "openai/gpt-4o-mini",
