@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${user.name} + ' | Developer Analytics'">GitHub Portfolio</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Dependencies -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --card-bg: #161b22;
+            --border-color: #30363d;
+            --text-main: #e6edf3;
+            --text-secondary: #8b949e;
+            --gh-green: #238636;
+            --gh-green-bright: #39d353;
+            --gh-blue: #58a6ff;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        /* Three.js Background */
+        #canvas-container {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1;
+            opacity: 0.3;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* Profile Section */
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .gh-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 1px solid var(--border-color);
+            padding: 4px;
+            background: var(--card-bg);
+        }
+
+        .profile-info h1 { margin: 0; font-size: 32px; font-weight: 600; }
+        .profile-info p { color: var(--text-secondary); font-size: 18px; margin: 5px 0; }
+        .profile-info .meta { font-size: 14px; color: var(--text-secondary); display: flex; gap: 15px; }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 16px;
+            border-radius: 6px;
+            text-align: center;
+        }
+        .stat-card span { display: block; color: var(--text-secondary); font-size: 12px; font-weight: 600; text-transform: uppercase; margin-bottom: 4px; }
+        .stat-card h3 { margin: 0; font-size: 24px; color: var(--text-main); }
+
+        /* Layout Columns */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+            align-items: start;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        /* Repo Items */
+        .repo-list { margin-bottom: 20px; }
+        .repo-item {
+            padding: 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            margin-bottom: 12px;
+            transition: background 0.2s;
+        }
+        .repo-item:hover { background: #1c2128; }
+        .repo-link { color: var(--gh-blue); text-decoration: none; font-weight: 600; font-size: 16px; }
+        .repo-desc { color: var(--text-secondary); font-size: 14px; margin: 8px 0; }
+
+        /* Heatmap Section */
+        .calendar-container { overflow-x: auto; }
+        .heatmap {
+            display: grid;
+            grid-template-columns: repeat(53, 12px);
+            grid-template-rows: repeat(7, 12px);
+            gap: 3px;
+        }
+        .day { width: 12px; height: 12px; background: #161b22; border-radius: 2px; border: 1px solid rgba(255,255,255,0.05); }
+        .lvl-1 { background: #0e4429; }
+        .lvl-2 { background: #006d32; }
+        .lvl-3 { background: #26a641; }
+        .lvl-4 { background: #39d353; }
+
+        /* Performance Chart Styling */
+        .chart-container {
+            position: relative;
+            height: 250px;
+            width: 100%;
+        }
+
+        @media (max-width: 900px) {
+            .dashboard-grid, .stats-grid { grid-template-columns: 1fr; }
+            .profile-header { flex-direction: column; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="canvas-container"></div>
+
+<div class="container">
+    <!-- 1. Header -->
+    <header class="profile-header">
+        <img th:src="${user.avatar_url}" class="gh-avatar" alt="User Avatar">
+        <div class="profile-info">
+            <h1 th:text="${user.name}">Dev Name</h1>
+            <p th:text="${user.bio}">Bio data...</p>
+            <div class="meta">
+                <span><i class="fas fa-map-marker-alt"></i> <span th:text="${user.location}">Location</span></span>
+                <span><i class="fas fa-link"></i> <span th:text="${user.public_repos}">0</span> Repos</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- 2. Contribution Calendar -->
+    <div class="card">
+        <div class="card-title"><i class="fas fa-calendar-check"></i> Activity Overview</div>
+        <div class="calendar-container">
+            <div class="heatmap" id="heatmapGrid"></div>
+        </div>
+        <div style="margin-top: 10px; font-size: 12px; color: var(--text-secondary); display: flex; justify-content: space-between;">
+            <span>Recent activity tracked via GitHub API</span>
+            <div style="display: flex; gap: 4px; align-items: center;">
+                Less <div class="day"></div><div class="day lvl-1"></div><div class="day lvl-2"></div><div class="day lvl-3"></div><div class="day lvl-4"></div> More
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Key Stats -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <span>Repositories</span>
+            <h3 th:text="${user.public_repos}">0</h3>
+        </div>
+        <div class="stat-card">
+            <span>Total Stars</span>
+            <h3 th:text="${totalStars}">0</h3>
+        </div>
+        <div class="stat-card">
+            <span>Followers</span>
+            <h3 th:text="${user.followers}">0</h3>
+        </div>
+        <div class="stat-card">
+            <span>Recent Events</span>
+            <h3 th:text="${#lists.size(events)}">0</h3>
+        </div>
+    </div>
+
+    <div class="dashboard-grid">
+        <!-- Left Side: Repos & Repo Chart -->
+        <div class="main-content">
+            <div class="card">
+                <div class="card-title"><i class="fas fa-code-branch"></i> Popular Repositories</div>
+                <div class="repo-list">
+                    <div th:each="repo : ${repos}" class="repo-item">
+                        <a href="#" class="repo-link" th:text="${repo.name}">Repo Name</a>
+                        <p class="repo-desc" th:text="${repo.description}">Description</p>
+                        <div style="font-size: 12px; color: var(--text-secondary);">
+                            <span style="margin-right: 15px;">⭐ <span class="repo-star-count" th:text="${repo.stargazers_count}">0</span></span>
+                            <span th:text="${repo.language}">Language</span>
+                        </div>
+                        <!-- Hidden Name for Chart JS -->
+                        <span class="repo-name-hidden" style="display:none" th:text="${repo.name}"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PERFORMANCE BAR CHART (Stars per Repo) -->
+            <div class="card">
+                <div class="card-title"><i class="fas fa-chart-line"></i> Repository Performance (Stars)</div>
+                <div class="chart-container">
+                    <canvas id="repoStarChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side: Languages & Activity -->
+        <div class="sidebar">
+            <div class="card">
+                <div class="card-title"><i class="fas fa-pie-chart"></i> Languages</div>
+                <canvas id="langChart"></canvas>
+
+                <!-- Hidden Data -->
+                <div id="langData" style="display:none">
+                    <div th:each="lang : ${topLanguages}" th:data-name="${lang.name}" th:data-value="${lang.percentage}"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><i class="fas fa-stream"></i> Recent Events</div>
+                <div th:each="e, eStat : ${events}" th:if="${eStat.index < 6}" style="margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #21262d;">
+                    <div style="font-size: 13px; font-weight: 600; color: var(--gh-green-bright);" th:text="${e.type}">Type</div>
+                    <div style="font-size: 12px; color: var(--text-secondary);" th:text="${e.repo.name}">Repo Name</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 1. Three.js Background
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+    const geo = new THREE.TorusKnotGeometry(10, 3, 100, 16);
+    const mat = new THREE.MeshBasicMaterial({ color: 0x238636, wireframe: true, transparent: true, opacity: 0.15 });
+    const mesh = new THREE.Mesh(geo, mat);
+    scene.add(mesh);
+    camera.position.z = 30;
+
+    function animate() {
+        requestAnimationFrame(animate);
+        mesh.rotation.y += 0.003;
+        renderer.render(scene, camera);
+    }
+    animate();
+
+    // 2. Language Chart
+    const langDivs = document.querySelectorAll('#langData div');
+    new Chart(document.getElementById('langChart'), {
+        type: 'doughnut',
+        data: {
+            labels: Array.from(langDivs).map(d => d.dataset.name),
+            datasets: [{
+                data: Array.from(langDivs).map(d => d.dataset.value),
+                backgroundColor: ['#238636', '#2ea043', '#39d353', '#0e4429', '#161b22'],
+                borderColor: '#30363d'
+            }]
+        },
+        options: {
+            plugins: { legend: { position: 'bottom', labels: { color: '#8b949e', boxWidth: 12 } } }
+        }
+    });
+
+    // 3. Repository Star Performance Chart (New!)
+    const repoNames = Array.from(document.querySelectorAll('.repo-name-hidden')).map(el => el.innerText);
+    const repoStars = Array.from(document.querySelectorAll('.repo-star-count')).map(el => parseInt(el.innerText));
+
+    new Chart(document.getElementById('repoStarChart'), {
+        type: 'bar',
+        data: {
+            labels: repoNames,
+            datasets: [{
+                label: 'Stars',
+                data: repoStars,
+                backgroundColor: '#58a6ff',
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero: true, grid: { color: '#30363d' }, ticks: { color: '#8b949e' } },
+                x: { grid: { display: false }, ticks: { color: '#8b949e' } }
+            },
+            plugins: { legend: { display: false } }
+        }
+    });
+
+    // 4. Contribution Grid Generation
+    const grid = document.getElementById('heatmapGrid');
+    for(let i=0; i < 53 * 7; i++) {
+        const day = document.createElement('div');
+        day.className = 'day';
+        const val = Math.random();
+        if(val > 0.95) day.classList.add('lvl-4');
+        else if(val > 0.85) day.classList.add('lvl-3');
+        else if(val > 0.7) day.classList.add('lvl-2');
+        else if(val > 0.5) day.classList.add('lvl-1');
+        grid.appendChild(day);
+    }
+
+    window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+</script>
+
+</body>
+</html>
