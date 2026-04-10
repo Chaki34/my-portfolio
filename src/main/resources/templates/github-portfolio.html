@@ -5,7 +5,7 @@
     <title th:text="${user.name} + ' | Developer Analytics'">GitHub Portfolio</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- Dependencies -->
+   
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -30,7 +30,7 @@
             line-height: 1.5;
         }
 
-        /* Three.js Background */
+      
         #canvas-container {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -44,7 +44,7 @@
             padding: 40px 20px;
         }
 
-        /* Profile Section */
+      
         .profile-header {
             display: flex;
             align-items: center;
@@ -65,7 +65,7 @@
         .profile-info p { color: var(--text-secondary); font-size: 18px; margin: 5px 0; }
         .profile-info .meta { font-size: 14px; color: var(--text-secondary); display: flex; gap: 15px; }
 
-        /* Stats Grid */
+     
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -110,7 +110,7 @@
             padding-bottom: 10px;
         }
 
-        /* Repo Items */
+  
         .repo-list { margin-bottom: 20px; }
         .repo-item {
             padding: 16px;
@@ -137,7 +137,7 @@
         .lvl-3 { background: #26a641; }
         .lvl-4 { background: #39d353; }
 
-        /* Performance Chart Styling */
+      
         .chart-container {
             position: relative;
             height: 250px;
@@ -155,7 +155,7 @@
 <div id="canvas-container"></div>
 
 <div class="container">
-    <!-- 1. Header -->
+    
     <header class="profile-header">
         <img th:src="${user.avatar_url}" class="gh-avatar" alt="User Avatar">
         <div class="profile-info">
@@ -182,7 +182,7 @@
         </div>
     </div>
 
-    <!-- 3. Key Stats -->
+   
     <div class="stats-grid">
         <div class="stat-card">
             <span>Repositories</span>
@@ -203,7 +203,7 @@
     </div>
 
     <div class="dashboard-grid">
-        <!-- Left Side: Repos & Repo Chart -->
+       
         <div class="main-content">
             <div class="card">
                 <div class="card-title"><i class="fas fa-code-branch"></i> Popular Repositories</div>
@@ -221,7 +221,7 @@
                 </div>
             </div>
 
-            <!-- PERFORMANCE BAR CHART (Stars per Repo) -->
+          
             <div class="card">
                 <div class="card-title"><i class="fas fa-chart-line"></i> Repository Performance (Stars)</div>
                 <div class="chart-container">
@@ -254,7 +254,7 @@
 </div>
 
 <script>
-    // 1. Three.js Background
+    
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
@@ -274,7 +274,7 @@
     }
     animate();
 
-    // 2. Language Chart
+  
     const langDivs = document.querySelectorAll('#langData div');
     new Chart(document.getElementById('langChart'), {
         type: 'doughnut',
@@ -291,7 +291,6 @@
         }
     });
 
-    // 3. Repository Star Performance Chart (New!)
     const repoNames = Array.from(document.querySelectorAll('.repo-name-hidden')).map(el => el.innerText);
     const repoStars = Array.from(document.querySelectorAll('.repo-star-count')).map(el => parseInt(el.innerText));
 
@@ -317,7 +316,7 @@
         }
     });
 
-    // 4. Contribution Grid Generation
+  
     const grid = document.getElementById('heatmapGrid');
     for(let i=0; i < 53 * 7; i++) {
         const day = document.createElement('div');
