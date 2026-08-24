@@ -3976,31 +3976,25 @@
 <div class="scroll-progress" id="scrollProgress"></div>
 
 <!-- TOP COURSE BAR -->
-<div class="course-topbar">
+<<div class="course-topbar">
     <div class="course-ticker">
-        <div class="course-track" id="courseTrack">
-            <!-- Original Items -->
-            <div class="course-item" data-url="https://youtube.com/playlist?list=PL_COURSE_1"><i class="fab fa-java"></i> Java OOPS: Full Course Playlist</div>
-            <div class="course-item" data-url="https://youtube.com/playlist?list=PL_COURSE_2"><i class="fas fa-code-branch"></i> DSA Made Easy | Gate & Placement</div>
-            <div class="course-item" data-url="https://youtube.com/playlist?list=PL_COURSE_3"><i class="fas fa-terminal"></i> Java Basics: Interview Preparation</div>
-            <div class="course-item" data-url="https://youtube.com/playlist?list=PL_COURSE_4"><i class="fas fa-shapes"></i> All Important Pattern Problems</div>
-            <div class="course-item" data-url="https://youtube.com/playlist?list=PL_COURSE_5"><i class="fas fa-network-wired"></i> Computer Networks Full Course</div>
-
-            <!-- Duplicated Items for Seamless Loop -->
-            <div class="course-item" data-url="https://youtube.com/playlist?list=PL_COURSE_1"><i class="fab fa-java"></i> Java OOPS: Full Course Playlist</div>
-            <div class="course-item" data-url="https://youtube.com/playlist?list=PL_COURSE_2"><i class="fas fa-code-branch"></i> DSA Made Easy | Gate & Placement</div>
-            <div class="course-item" data-url="https://youtube.com/playlist?list=PL_COURSE_3"><i class="fas fa-terminal"></i> Java Basics: Interview Preparation</div>
-            <div class="course-item" data-url="https://youtube.com/playlist?list=PL_COURSE_4"><i class="fas fa-shapes"></i> All Important Pattern Problems</div>
-            <div class="course-item" data-url="https://youtube.com/playlist?list=PL_COURSE_5"><i class="fas fa-network-wired"></i> Computer Networks Full Course</div>
+        <div class="course-track">
+            <!-- Dynamic items from YouTube -->
+            <div th:each="playlist : ${playlists}"
+                 class="course-item"
+                 th:data-id="${playlist.id}"
+                 onclick="window.location.href='/v1/courses?open=' + this.getAttribute('data-id')">
+                <i class="fab fa-youtube"></i>
+                <span th:text="${playlist.snippet.title}">Playlist Title</span>
+            </div>
+            <!-- Duplicate for loop -->
+            <div th:each="playlist : ${playlists}" class="course-item" th:data-id="${playlist.id}">
+                <i class="fab fa-youtube"></i> <span th:text="${playlist.snippet.title}"></span>
+            </div>
         </div>
     </div>
-    <!-- Button now on the Right -->
-    <!-- Update this line in your Top Bar -->
-    <a th:href="@{/v1/courses}" class="view-courses-btn">View Courses</a>
-
+    <a th:href="@{/v1/courses}" class="view-courses-btn">All Courses</a>
 </div>
-
-
 
 
 <!-- Header Navigation -->

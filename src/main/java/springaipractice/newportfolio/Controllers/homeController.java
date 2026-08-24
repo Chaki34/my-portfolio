@@ -19,6 +19,8 @@ public class homeController {
 
     private final VisitService visitService;
 
+    private final YouTubeService  youTubeService;
+
     private final ContactRepository contactRepository;
 
 
@@ -27,8 +29,9 @@ public class homeController {
 
     private FeedbackService feedbackService;
 
-    public homeController(VisitService visitService, ContactRepository contactRepository , BrevoEmailService brevoEmailService , FeedbackService feedbackService) {
+    public homeController(VisitService visitService, YouTubeService youTubeService, ContactRepository contactRepository , BrevoEmailService brevoEmailService , FeedbackService feedbackService) {
         this.visitService = visitService;
+        this.youTubeService = youTubeService;
         this.contactRepository = contactRepository;
         this.brevoEmailService = brevoEmailService;
         this.feedbackService = feedbackService;
@@ -53,7 +56,10 @@ public class homeController {
 
         model.addAttribute("avgRating", avgRating);
 
+        model.addAttribute("playlists", youTubeService.getPlaylists());
         return "index";
+
+
     }
 
     @GetMapping("/projects")
@@ -214,8 +220,16 @@ public class homeController {
     }
 
     @GetMapping("/courses")
-    public String showCourses(){
+    public String showCourses(Model model) {
+        model.addAttribute("playlists", youTubeService.getPlaylists());
         return "courses";
+    }
+
+    // API for the modal to fetch videos dynamically
+    @GetMapping("/playlist-videos/{id}")
+    @ResponseBody
+    public List<Map<String, Object>> getVideos(@PathVariable String id) {
+        return youTubeService.getPlaylistVideos(id);
     }
 }
 
