@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Courses | Codi_Die_Oxcide</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <style>
+        :root {
+            --saffron: #FF9933;
+            --dark-bg: #0a0a0a;
+            --card-bg: #111111;
+        }
+
+        body {
+            background-color: var(--dark-bg);
+            font-family: 'Inter', sans-serif;
+            color: white;
+        }
+
+        .header-font { font-family: 'Playfair Display', serif; }
+
+        /* Course Card Styling */
+        .course-card {
+            background: var(--card-bg);
+            border: 1px solid #222;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .course-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--saffron);
+            box-shadow: 0 10px 30px rgba(255, 153, 51, 0.1);
+        }
+
+        .thumbnail-container {
+            position: relative;
+            aspect-ratio: 16/9;
+            overflow: hidden;
+        }
+
+        .thumbnail-container img {
+            transition: transform 0.5s ease;
+        }
+
+        .course-card:hover .thumbnail-container img {
+            transform: scale(1.1);
+        }
+
+        .video-count-badge {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.8);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .btn-saffron {
+            background: var(--saffron);
+            color: black;
+            font-weight: 700;
+            transition: all 0.3s ease;
+        }
+
+        .btn-saffron:hover {
+            background: white;
+            transform: scale(1.05);
+        }
+
+        /* Indian Flag Stripe Footer */
+        .flag-stripes {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            position: fixed;
+            bottom: 0;
+        }
+        .stripe-saffron { background: #FF9933; height: 4px; }
+        .stripe-white { background: #ffffff; height: 4px; }
+        .stripe-green { background: #138808; height: 4px; }
+
+        .glass-nav {
+            background: rgba(10, 10, 10, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #222;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Navigation -->
+<nav class="glass-nav sticky top-0 z-50 px-6 py-4 flex justify-between items-center">
+    <div class="flex items-center space-x-3">
+        <div class="w-8 h-8 bg-white rotate-45"></div>
+        <span class="header-font text-2xl tracking-tighter">Codi_Die_Oxcide</span>
+    </div>
+    <a href="/" class="text-sm font-bold hover:text-[#FF9933] transition"><i class="fas fa-arrow-left mr-2"></i> BACK TO HOME</a>
+</nav>
+
+<!-- Header Section -->
+<header class="py-16 px-6 text-center">
+    <h1 class="header-font text-5xl md:text-7xl mb-4">Master Your <span class="text-[#FF9933]">Craft</span>.</h1>
+    <p class="text-gray-400 max-w-2xl mx-auto text-lg">
+        Structured learning paths designed to take you from beginner to industry-ready software engineer.
+    </p>
+</header>
+
+<!-- Course Grid -->
+<main class="max-w-7xl mx-auto px-6 pb-32">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+
+        <!-- Course 1 -->
+        <div class="course-card rounded-2xl">
+            <div class="thumbnail-container">
+                <img src="https://img.youtube.com/vi/placeholder1/maxresdefault.jpg" alt="Java OOPS" class="w-full h-full object-cover">
+                <div class="video-count-badge">5 VIDEOS</div>
+            </div>
+            <div class="p-6">
+                <span class="text-[10px] tracking-[3px] text-[#FF9933] font-bold uppercase">Development</span>
+                <h3 class="text-xl font-bold mt-2 mb-3">Java OOPS: Full Course Mastery</h3>
+                <p class="text-gray-400 text-sm mb-6 leading-relaxed">
+                    Deep dive into Classes, Objects, Inheritance, and Polymorphism with real-world industry examples.
+                </p>
+                <div class="flex justify-between items-center">
+                    <span class="text-xs text-gray-500"><i class="far fa-clock mr-1"></i> 8+ Hours</span>
+                    <a href="https://youtube.com/playlist?list=PL_COURSE_1" target="_blank" class="btn-saffron px-5 py-2 rounded-lg text-sm">START LEARNING</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Course 2 -->
+        <div class="course-card rounded-2xl">
+            <div class="thumbnail-container">
+                <img src="https://img.youtube.com/vi/placeholder2/maxresdefault.jpg" alt="DSA" class="w-full h-full object-cover">
+                <div class="video-count-badge">32 VIDEOS</div>
+            </div>
+            <div class="p-6">
+                <span class="text-[10px] tracking-[3px] text-[#FF9933] font-bold uppercase">Placement</span>
+                <h3 class="text-xl font-bold mt-2 mb-3">DSA Made Easy for Placements</h3>
+                <p class="text-gray-400 text-sm mb-6 leading-relaxed">
+                    Mastering Arrays, Linked Lists, and Trees. Specifically designed for GATE and MAANG interviews.
+                </p>
+                <div class="flex justify-between items-center">
+                    <span class="text-xs text-gray-500"><i class="far fa-clock mr-1"></i> 15+ Hours</span>
+                    <a href="https://youtube.com/playlist?list=PL_COURSE_2" target="_blank" class="btn-saffron px-5 py-2 rounded-lg text-sm">START LEARNING</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Course 3 -->
+        <div class="course-card rounded-2xl">
+            <div class="thumbnail-container">
+                <img src="https://img.youtube.com/vi/placeholder3/maxresdefault.jpg" alt="Computer Networks" class="w-full h-full object-cover">
+                <div class="video-count-badge">79 VIDEOS</div>
+            </div>
+            <div class="p-6">
+                <span class="text-[10px] tracking-[3px] text-[#FF9933] font-bold uppercase">Computer Science</span>
+                <h3 class="text-xl font-bold mt-2 mb-3">Computer Networks: Zero to Hero</h3>
+                <p class="text-gray-400 text-sm mb-6 leading-relaxed">
+                    Complete B.Tech syllabus covering OSI layers, TCP/IP, and Network Security for MAKAUT students.
+                </p>
+                <div class="flex justify-between items-center">
+                    <span class="text-xs text-gray-500"><i class="far fa-clock mr-1"></i> 20+ Hours</span>
+                    <a href="https://youtube.com/playlist?list=PL_COURSE_5" target="_blank" class="btn-saffron px-5 py-2 rounded-lg text-sm">START LEARNING</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</main>
+
+<!-- Flag Stripe Footer -->
+<div class="flag-stripes">
+    <div class="stripe-saffron"></div>
+    <div class="stripe-white"></div>
+    <div class="stripe-green"></div>
+</div>
+
+</body>
+</html>

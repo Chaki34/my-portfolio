@@ -3878,6 +3878,92 @@
 
 
 
+        /* --- TOP COURSE BAR STYLES (Button on Right) --- */
+.course-topbar {
+    width: 100%;
+    height: 50px;
+    background: #000;
+    color: white;
+    display: flex;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 2000;
+    overflow: hidden;
+    border-bottom: 1px solid #333;
+    font-family: 'Inter', sans-serif;
+}
+
+.course-ticker {
+    flex: 1; /* Takes up all space on the left */
+    overflow: hidden;
+    position: relative;
+    background: #111;
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.view-courses-btn {
+    background: #FF9933; /* Saffron */
+    color: #000;
+    height: 100%;
+    padding: 0 25px;
+    display: flex;
+    align-items: center;
+    font-weight: 800;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    white-space: nowrap;
+    z-index: 2001; /* Stays above the scrolling text */
+    text-decoration: none;
+    transition: background 0.3s;
+    border-left: 2px solid #000; /* Separator */
+}
+
+.view-courses-btn:hover {
+    background: #fff;
+}
+
+.course-track {
+    display: flex;
+    white-space: nowrap;
+    /* Animation: Left to Right */
+    animation: scroll-ltr 40s linear infinite;
+}
+
+.course-track:hover {
+    animation-play-state: paused;
+}
+
+.course-item {
+    padding: 0 40px;
+    color: #ccc;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: color 0.2s;
+}
+
+.course-item:hover {
+    color: #FF9933;
+    text-decoration: underline;
+}
+
+.course-item i {
+    margin-right: 10px;
+    color: #FF9933;
+}
+
+/* Smooth Infinite Loop for Left to Right */
+@keyframes scroll-ltr {
+    0% { transform: translateX(-50%); }
+    100% { transform: translateX(0%); }
+}
+
     </style>
 
 
@@ -3888,6 +3974,34 @@
 
 <!-- Scroll Progress Indicator -->
 <div class="scroll-progress" id="scrollProgress"></div>
+
+<!-- TOP COURSE BAR -->
+<div class="course-topbar">
+    <div class="course-ticker">
+        <div class="course-track" id="courseTrack">
+            <!-- Original Items -->
+            <div class="course-item" data-url="https://youtube.com/playlist?list=PL_COURSE_1"><i class="fab fa-java"></i> Java OOPS: Full Course Playlist</div>
+            <div class="course-item" data-url="https://youtube.com/playlist?list=PL_COURSE_2"><i class="fas fa-code-branch"></i> DSA Made Easy | Gate & Placement</div>
+            <div class="course-item" data-url="https://youtube.com/playlist?list=PL_COURSE_3"><i class="fas fa-terminal"></i> Java Basics: Interview Preparation</div>
+            <div class="course-item" data-url="https://youtube.com/playlist?list=PL_COURSE_4"><i class="fas fa-shapes"></i> All Important Pattern Problems</div>
+            <div class="course-item" data-url="https://youtube.com/playlist?list=PL_COURSE_5"><i class="fas fa-network-wired"></i> Computer Networks Full Course</div>
+
+            <!-- Duplicated Items for Seamless Loop -->
+            <div class="course-item" data-url="https://youtube.com/playlist?list=PL_COURSE_1"><i class="fab fa-java"></i> Java OOPS: Full Course Playlist</div>
+            <div class="course-item" data-url="https://youtube.com/playlist?list=PL_COURSE_2"><i class="fas fa-code-branch"></i> DSA Made Easy | Gate & Placement</div>
+            <div class="course-item" data-url="https://youtube.com/playlist?list=PL_COURSE_3"><i class="fas fa-terminal"></i> Java Basics: Interview Preparation</div>
+            <div class="course-item" data-url="https://youtube.com/playlist?list=PL_COURSE_4"><i class="fas fa-shapes"></i> All Important Pattern Problems</div>
+            <div class="course-item" data-url="https://youtube.com/playlist?list=PL_COURSE_5"><i class="fas fa-network-wired"></i> Computer Networks Full Course</div>
+        </div>
+    </div>
+    <!-- Button now on the Right -->
+    <!-- Update this line in your Top Bar -->
+    <a th:href="@{/v1/courses}" class="view-courses-btn">View Courses</a>
+
+</div>
+
+
+
 
 <!-- Header Navigation -->
 <nav class="flex justify-between items-center px-10 py-8 bg-white" id="navbar">
@@ -6330,6 +6444,21 @@ if (response.ok) {
     });
     text.addEventListener('mouseleave', () => {
         text.style.animationDuration = '0.2s'; // Normal buzz
+    });
+});
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+    const courseItems = document.querySelectorAll('.course-item');
+
+    courseItems.forEach(item => {
+        item.addEventListener('click', () => {
+            const url = item.getAttribute('data-url');
+            if (url) {
+                window.open(url, '_blank'); // Opens in a new tab like YouTube
+            }
+        });
     });
 });
 </script>

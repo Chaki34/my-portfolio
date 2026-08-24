@@ -212,6 +212,11 @@ public class homeController {
     public String quizPlayGround() {
         return "quiz-ground";
     }
+
+    @GetMapping("/courses")
+    public String showCourses(){
+        return "courses";
+    }
 }
 
 
