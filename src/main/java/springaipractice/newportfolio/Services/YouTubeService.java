@@ -1,55 +1,81 @@
 package springaipractice.newportfolio.Services;
 
-
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import java.util.*;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class YouTubeService {
-    private final String API_KEY = "AIzaSyC3QCNQJIh_2dn26g1xuvK9YEVIUqyy8B8"; // Replace this
-    private final String CHANNEL_ID = "UCtnZGQV0SRJm7ONgFqz5CMA"; // Replace this
-    private final String BASE_URL = "https://www.googleapis.com/youtube/v3";
+
+    @Value("${youtube.api.key}")
+    private String apiKey;
+
+    @Value("${youtube.channel.id}")
+    private String channelId;
+
+    @Value("${youtube.api.base-url}")
+    private String baseUrl;
+
+    private final RestTemplate restTemplate = new RestTemplate();
 
     public List<Map<String, Object>> getPlaylists() {
-        String url = String.format("%s/playlists?part=snippet,contentDetails&channelId=%s&maxResults=50&key=%s",
-                BASE_URL, CHANNEL_ID, API_KEY);
-        RestTemplate restTemplate = new RestTemplate();
-        Map<String, Object> response = restTemplate.getForObject(url, Map.class);
+
+        String url = String.format(
+                "%s/playlists?part=snippet,contentDetails&channelId=%s&maxResults=50&key=%s",
+                baseUrl,
+                channelId,
+                apiKey
+        );
+
+        Map<String, Object> response =
+                restTemplate.getForObject(url, Map.class);
+
+        if (response == null || response.get("items") == null) {
+            return new ArrayList<>();
+        }
+
         return (List<Map<String, Object>>) response.get("items");
     }
 
     public List<Map<String, Object>> getPlaylistVideos(String playlistId) {
+
         List<Map<String, Object>> allVideos = new ArrayList<>();
         String nextPageToken = null;
-        RestTemplate restTemplate = new RestTemplate();
 
         do {
-            // Construct the URL. If nextPageToken exists, append it to the URL
-            String url = String.format("%s/playlistItems?part=snippet&playlistId=%s&maxResults=50&key=%s",
-                    BASE_URL, playlistId, API_KEY);
+            String url = String.format(
+                    "%s/playlistItems?part=snippet,contentDetails&playlistId=%s&maxResults=50&key=%s",
+                    baseUrl,
+                    playlistId,
+                    apiKey
+            );
 
-            if (nextPageToken != null) {
+            if (nextPageToken != null && !nextPageToken.isBlank()) {
                 url += "&pageToken=" + nextPageToken;
             }
 
-            // Fetch data from YouTube
-            Map<String, Object> response = restTemplate.getForObject(url, Map.class);
+            Map<String, Object> response =
+                    restTemplate.getForObject(url, Map.class);
 
-            if (response != null) {
-                // 1. Extract the videos (items) from the current page
-                List<Map<String, Object>> items = (List<Map<String, Object>>) response.get("items");
-                if (items != null) {
-                    allVideos.addAll(items);
-                }
-
-                // 2. Check if there is another page
-                nextPageToken = (String) response.get("nextPageToken");
-            } else {
-                nextPageToken = null; // Stop if response is null
+            if (response == null) {
+                break;
             }
 
-        } while (nextPageToken != null); // Keep looping as long as there is a next page
+            List<Map<String, Object>> items =
+                    (List<Map<String, Object>>) response.get("items");
+
+            if (items != null) {
+                allVideos.addAll(items);
+            }
+
+            nextPageToken =
+                    (String) response.get("nextPageToken");
+
+        } while (nextPageToken != null && !nextPageToken.isBlank());
 
         return allVideos;
     }
