@@ -40,6 +40,13 @@ public class CourseEnrollment {
     @Column(name = "certificate_unlocked", columnDefinition = "boolean default false")
     private boolean certificateUnlocked = false;
 
+    // Persistent Certificate identifier and issuance timestamp
+    @Column(name = "certificate_id")
+    private String certificateId;
+
+    @Column(name = "certificate_issued_at")
+    private LocalDateTime certificateIssuedAt;
+
     private LocalDateTime enrolledAt = LocalDateTime.now();
     private LocalDateTime lastAccessedAt = LocalDateTime.now();
 
@@ -81,6 +88,12 @@ public class CourseEnrollment {
 
     public boolean isCertificateUnlocked() { return certificateUnlocked; }
     public void setCertificateUnlocked(boolean certificateUnlocked) { this.certificateUnlocked = certificateUnlocked; }
+
+    public String getCertificateId() { return certificateId; }
+    public void setCertificateId(String certificateId) { this.certificateId = certificateId; }
+
+    public LocalDateTime getCertificateIssuedAt() { return certificateIssuedAt; }
+    public void setCertificateIssuedAt(LocalDateTime certificateIssuedAt) { this.certificateIssuedAt = certificateIssuedAt; }
 
     public LocalDateTime getEnrolledAt() { return enrolledAt; }
     public void setEnrolledAt(LocalDateTime enrolledAt) { this.enrolledAt = enrolledAt; }

@@ -12,6 +12,7 @@ import springaipractice.newportfolio.Repos.VideoProgressLogRepository;
 import springaipractice.newportfolio.Services.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
@@ -318,10 +319,21 @@ public class homeController {
             return "redirect:/v1/course-dashboard?studentId=" + studentId + "&playlistId=" + playlistId;
         }
 
+        // If certificate was never generated, generate once and persist to database
+        if (enrollment.getCertificateId() == null || enrollment.getCertificateId().trim().isEmpty()) {
+            String generatedCertId = "CERT-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+            enrollment.setCertificateId(generatedCertId);
+            enrollment.setCertificateIssuedAt(LocalDateTime.now());
+            enrollmentRepo.save(enrollment);
+        }
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMMM yyyy");
+        String formattedDate = enrollment.getCertificateIssuedAt().format(formatter);
+
         model.addAttribute("student", student);
         model.addAttribute("enrollment", enrollment);
-        model.addAttribute("completionDate", LocalDate.now().format(DateTimeFormatter.ofPattern("dd MMMM yyyy")));
-        model.addAttribute("certificateId", "CERT-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
+        model.addAttribute("completionDate", formattedDate);
+        model.addAttribute("certificateId", enrollment.getCertificateId());
 
         return "student-certificate";
     }
