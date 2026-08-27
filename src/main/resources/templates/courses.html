@@ -36,12 +36,12 @@
         /* Enrollment Action Bar */
         .enroll-bar { background: #1a1a1a; border: 1px solid var(--saffron); padding: 15px; border-radius: 12px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; }
 
-        /* Modal */
-        #videoModal { display: none; position: fixed; inset: 0; z-index: 3000; background: rgba(0,0,0,0.95); backdrop-filter: blur(10px); }
+        /* Modals */
+        #videoModal, #studentEnrollModal, #checkEnrollModal { display: none; position: fixed; inset: 0; z-index: 3000; background: rgba(0,0,0,0.95); backdrop-filter: blur(10px); }
         .modal-content { background: #111; border: 1px solid #333; max-width: 900px; width: 95%; max-height: 85vh; overflow-y: auto; border-radius: 24px; margin: 5vh auto; }
 
         /* Flag Footer */
-        .flag-stripes { width: 100%; height: 6px; display: flex; position: fixed; bottom: 0; z-index: 100; }
+        .flag-stripes { width: 100%; height: 6px; display: flex; position: fixed; bottom: 0; left: 0; z-index: 100; }
         .stripe-saffron { background: var(--saffron); flex: 1; }
         .stripe-white { background: #ffffff; flex: 1; }
         .stripe-green { background: var(--indian-green); flex: 1; }
@@ -52,6 +52,7 @@
 </head>
 <body class="pb-20">
 
+<!-- Navigation Bar -->
 <nav class="sticky top-0 bg-[#0a0a0a]/90 backdrop-blur-md px-6 md:px-12 py-4 flex justify-between items-center z-50 border-b border-white/5">
     <div class="flex items-center space-x-3">
         <div class="w-8 h-8 bg-[#FF9933] transform rotate-45 flex items-center justify-center text-black font-bold">
@@ -59,12 +60,21 @@
         </div>
         <span class="header-font text-xl md:text-2xl tracking-tighter">Codi_Die_Oxcide</span>
     </div>
-    <a th:href="@{/v1/index}" class="text-xs font-bold hover:text-[#FF9933] transition-all uppercase tracking-widest">
-        <i class="fas fa-arrow-left mr-2"></i> Back to Home
-    </a>
+
+    <div class="flex items-center gap-3 md:gap-6">
+        <!-- Already Enrolled Button -->
+        <button onclick="openCheckEnrollmentModal()" class="text-xs font-bold text-[#FF9933] hover:text-white transition-all uppercase tracking-widest flex items-center gap-1.5 border border-[#FF9933]/40 hover:border-[#FF9933] px-3.5 py-1.5 rounded-lg bg-[#FF9933]/10">
+            <i class="fas fa-user-check"></i> <span class="hidden sm:inline">Already</span> Enrolled?
+        </button>
+
+        <!-- Back to Home -->
+        <a th:href="@{/v1/index}" class="text-xs font-bold hover:text-[#FF9933] transition-all uppercase tracking-widest">
+            <i class="fas fa-arrow-left mr-1 md:mr-2"></i> <span class="hidden sm:inline">Back to</span> Home
+        </a>
+    </div>
 </nav>
 
-<!-- Hero Sliding Section -->
+<!-- Hero Slider -->
 <header class="hero-slider">
     <div class="slide active"><img src="https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=1920&q=80" class="w-full h-full object-cover"></div>
     <div class="slide"><img src="https://images.unsplash.com/photo-1587620962725-abab7fe55159?auto=format&fit=crop&w=1920&q=80" class="w-full h-full object-cover"></div>
@@ -79,6 +89,7 @@
     </div>
 </header>
 
+<!-- Courses Grid -->
 <main class="max-w-7xl mx-auto px-6 py-20">
     <div class="mb-12 border-l-4 border-[#FF9933] pl-6">
         <h2 class="text-3xl font-bold uppercase tracking-widest">Available Courses</h2>
@@ -97,12 +108,18 @@
                 <h3 class="text-xl font-bold mb-4" th:text="${playlist.snippet.title}">Course Name</h3>
                 <p class="text-gray-400 text-sm mb-8 line-clamp-3" th:text="${playlist.snippet.description}">Description</p>
 
-                <div class="mt-auto pt-6 border-t border-white/5">
+                <div class="mt-auto pt-6 border-t border-white/5 flex gap-2">
                     <button th:data-id="${playlist.id}"
                             th:data-title="${playlist.snippet.title}"
                             onclick="openVideoModal(this.getAttribute('data-id'), this.getAttribute('data-title'))"
-                            class="w-full bg-[#FF9933] text-black py-3 rounded-lg text-xs font-bold hover:bg-white transition uppercase tracking-widest">
-                        View Course Structure
+                            class="flex-1 bg-white/10 text-white py-3 rounded-lg text-xs font-bold hover:bg-white/20 transition uppercase tracking-widest">
+                        Modules
+                    </button>
+                    <button th:data-id="${playlist.id}"
+                            th:data-title="${playlist.snippet.title}"
+                            onclick="openEnrollmentModal(this.getAttribute('data-id'), this.getAttribute('data-title'))"
+                            class="flex-1 bg-[#FF9933] text-black py-3 rounded-lg text-xs font-bold hover:bg-white transition uppercase tracking-widest">
+                        Enroll Now
                     </button>
                 </div>
             </div>
@@ -110,15 +127,14 @@
     </div>
 </main>
 
-<!-- Video Modal -->
+<!-- 1. Video Structure Preview Modal -->
 <div id="videoModal">
     <div class="modal-content p-8 relative">
-        <button onclick="closeModal()" class="absolute top-6 right-6 text-2xl hover:text-[#FF9933]">&times;</button>
+        <button onclick="closeModal('videoModal')" class="absolute top-6 right-6 text-2xl hover:text-[#FF9933]">&times;</button>
 
         <h2 id="modalTitle" class="header-font text-3xl text-[#FF9933] mb-2">Playlist</h2>
         <p id="enrollMsg" class="text-gray-400 text-xs uppercase mb-6"></p>
 
-        <!-- Enrollment Action -->
         <div id="actionContainer" class="enroll-bar">
             <div>
                 <h4 class="font-bold text-white">Full Access Required</h4>
@@ -129,12 +145,111 @@
             </button>
         </div>
 
-        <div id="videoList" class="space-y-4">
-            <!-- Videos injected here -->
+        <div id="videoList" class="space-y-4"></div>
+    </div>
+</div>
+
+<!-- 2. Student Registration Modal -->
+<div id="studentEnrollModal">
+    <div class="modal-content p-8 md:p-10 relative max-w-xl">
+        <button onclick="closeModal('studentEnrollModal')" class="absolute top-6 right-6 text-2xl hover:text-[#FF9933]">&times;</button>
+
+        <div class="mb-6 border-l-4 border-[#FF9933] pl-4">
+            <h2 class="header-font text-2xl md:text-3xl text-white">Student <span class="text-[#FF9933]">Enrollment</span></h2>
+            <p class="text-xs text-gray-400 mt-1 uppercase" id="enrollCourseSubtitle">Enrolling in Course</p>
+        </div>
+
+        <form id="enrollmentForm" onsubmit="handleEnrollmentSubmit(event)" class="space-y-4">
+            <input type="hidden" id="formPlaylistId" name="playlistId">
+            <input type="hidden" id="formPlaylistTitle" name="playlistTitle">
+
+            <div>
+                <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-2">Full Name *</label>
+                <input type="text" id="fullName" required class="w-full bg-[#1c1c1c] border border-white/10 rounded-lg p-3 text-sm focus:border-[#FF9933] outline-none text-white">
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-2">Email Address *</label>
+                    <input type="email" id="email" required class="w-full bg-[#1c1c1c] border border-white/10 rounded-lg p-3 text-sm focus:border-[#FF9933] outline-none text-white">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-2">Contact Number *</label>
+                    <input type="tel" id="contactNumber" required class="w-full bg-[#1c1c1c] border border-white/10 rounded-lg p-3 text-sm focus:border-[#FF9933] outline-none text-white">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-2">Document Type *</label>
+                    <select id="docType" required class="w-full bg-[#1c1c1c] border border-white/10 rounded-lg p-3 text-sm focus:border-[#FF9933] outline-none text-gray-300">
+                        <option value="AADHAAR">Aadhaar Card</option>
+                        <option value="PAN">PAN Card</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-2">Document Number *</label>
+                    <input type="text" id="docNumber" required placeholder="e.g. 1234 5678 9012" class="w-full bg-[#1c1c1c] border border-white/10 rounded-lg p-3 text-sm focus:border-[#FF9933] outline-none text-white">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-2">Current Occupation *</label>
+                    <select id="occupation" required class="w-full bg-[#1c1c1c] border border-white/10 rounded-lg p-3 text-sm focus:border-[#FF9933] outline-none text-gray-300">
+                        <option value="STUDENT">Student</option>
+                        <option value="PROFESSIONAL">Working Professional</option>
+                        <option value="INTERN">Intern</option>
+                        <option value="OTHER">Other</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-2">Institution / Company *</label>
+                    <input type="text" id="institutionName" required placeholder="College or Company Name" class="w-full bg-[#1c1c1c] border border-white/10 rounded-lg p-3 text-sm focus:border-[#FF9933] outline-none text-white">
+                </div>
+            </div>
+
+            <button type="submit" id="enrollSubmitBtn" class="w-full mt-6 bg-[#FF9933] text-black font-black uppercase tracking-widest py-3.5 rounded-lg hover:bg-white transition flex items-center justify-center gap-2">
+                <span>Complete Enrollment & Enter Course</span>
+                <i class="fas fa-arrow-right"></i>
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- 3. Already Enrolled Lookup Modal -->
+<div id="checkEnrollModal">
+    <div class="modal-content p-6 md:p-8 relative max-w-md">
+        <button onclick="closeModal('checkEnrollModal')" class="absolute top-4 right-4 text-2xl text-gray-400 hover:text-[#FF9933]">&times;</button>
+
+        <div class="mb-6 border-l-4 border-[#FF9933] pl-3">
+            <h3 class="header-font text-xl font-bold text-white">Access Your Dashboard</h3>
+            <p class="text-xs text-gray-400 mt-1">Enter your registered email to continue learning</p>
+        </div>
+
+        <form id="checkEnrollForm" onsubmit="verifyStudentEmail(event)" class="space-y-4">
+            <div>
+                <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-2">Registered Email Address</label>
+                <input type="email" id="lookupEmail" required placeholder="name@example.com" class="w-full bg-[#1c1c1c] border border-white/10 rounded-lg p-3 text-sm focus:border-[#FF9933] outline-none text-white">
+            </div>
+
+            <div id="enrollErrorMsg" class="hidden text-xs text-red-400 bg-red-950/40 border border-red-900/50 p-2.5 rounded-lg"></div>
+
+            <button type="submit" id="verifyBtn" class="w-full bg-[#FF9933] text-black font-black uppercase tracking-widest py-3 rounded-lg hover:bg-white transition flex items-center justify-center gap-2">
+                <span>Find My Dashboard</span>
+                <i class="fas fa-arrow-right"></i>
+            </button>
+        </form>
+
+        <!-- Course Selection List -->
+        <div id="enrolledCoursesSection" class="hidden mt-6 pt-6 border-t border-white/10">
+            <h4 class="text-xs font-bold text-gray-300 uppercase tracking-wider mb-3">Your Enrolled Courses:</h4>
+            <div id="enrolledCoursesList" class="space-y-2 max-h-52 overflow-y-auto pr-1"></div>
         </div>
     </div>
 </div>
 
+<!-- Bottom Flag Strip -->
 <div class="flag-stripes">
     <div class="stripe-saffron"></div>
     <div class="stripe-white"></div>
@@ -142,88 +257,178 @@
 </div>
 
 <script>
-    // Enrollment Logic (Stored in Browser LocalStorage)
-    const STORAGE_KEY = "codi_die_oxcide_enrollments";
+    let activePlaylistId = "";
+    let activePlaylistTitle = "";
 
-    function isUserEnrolled(playlistId) {
-        const enrollments = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-        return enrollments.includes(playlistId);
+    // Open Student Registration Modal
+    function openEnrollmentModal(playlistId, title) {
+        activePlaylistId = playlistId;
+        activePlaylistTitle = title;
+
+        document.getElementById('formPlaylistId').value = playlistId;
+        document.getElementById('formPlaylistTitle').value = title;
+        document.getElementById('enrollCourseSubtitle').innerText = "Enrolling in: " + title;
+
+        closeModal('videoModal');
+        closeModal('checkEnrollModal');
+        document.getElementById('studentEnrollModal').style.display = 'block';
+        document.body.style.overflow = 'hidden';
     }
 
-    function enrollInCourse(playlistId, title) {
-        let enrollments = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-        if (!enrollments.includes(playlistId)) {
-            enrollments.push(playlistId);
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(enrollments));
+    // Submit Student Registration
+    async function handleEnrollmentSubmit(e) {
+        e.preventDefault();
+        const submitBtn = document.getElementById('enrollSubmitBtn');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Registering...';
+
+        const payload = {
+            fullName: document.getElementById('fullName').value,
+            email: document.getElementById('email').value,
+            contactNumber: document.getElementById('contactNumber').value,
+            docType: document.getElementById('docType').value,
+            docNumber: document.getElementById('docNumber').value,
+            occupation: document.getElementById('occupation').value,
+            institutionName: document.getElementById('institutionName').value,
+            playlistId: document.getElementById('formPlaylistId').value,
+            playlistTitle: document.getElementById('formPlaylistTitle').value
+        };
+
+        try {
+            const res = await fetch('/v1/enroll-course', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await res.json();
+            if (data.status === 'success') {
+                localStorage.setItem('studentId', data.studentId);
+                window.location.href = data.redirectUrl;
+            } else {
+                alert('Enrollment failed: ' + (data.message || 'Error occurred'));
+                submitBtn.disabled = false;
+                submitBtn.innerText = 'Complete Enrollment & Enter Course';
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Failed to connect to server');
+            submitBtn.disabled = false;
+            submitBtn.innerText = 'Complete Enrollment & Enter Course';
         }
-        alert("Success! You have enrolled in " + title);
-        openVideoModal(playlistId, title); // Refresh UI
     }
 
-    // Modal Logic
+    // Open Video Modules Preview Modal
     function openVideoModal(playlistId, title) {
+        activePlaylistId = playlistId;
+        activePlaylistTitle = title;
+
         const modal = document.getElementById('videoModal');
         const list = document.getElementById('videoList');
-        const actionBox = document.getElementById('actionContainer');
         const enrollBtn = document.getElementById('enrollBtn');
-        const enrollMsg = document.getElementById('enrollMsg');
-
-        const enrolled = isUserEnrolled(playlistId);
 
         document.getElementById('modalTitle').innerText = title;
+        document.getElementById('enrollMsg').innerText = "Preview mode - Enroll to access course player";
         modal.style.display = 'block';
         document.body.style.overflow = 'hidden';
 
-        if (enrolled) {
-            actionBox.style.display = 'none';
-            enrollMsg.innerHTML = '<span class="text-green-500 font-bold"><i class="fas fa-check-circle"></i> Enrolled & Unlocked</span>';
-        } else {
-            actionBox.style.display = 'flex';
-            enrollMsg.innerText = "Content is currently locked";
-            enrollBtn.onclick = () => enrollInCourse(playlistId, title);
-        }
-
-        list.innerHTML = '<div class="py-10 text-center animate-pulse">Fetching Module Data...</div>';
+        enrollBtn.onclick = () => openEnrollmentModal(playlistId, title);
+        list.innerHTML = '<div class="py-10 text-center animate-pulse text-gray-400">Fetching Module Data...</div>';
 
         fetch('/v1/playlist-videos/' + playlistId)
             .then(res => res.json())
             .then(data => {
                 list.innerHTML = '';
                 data.forEach((video, index) => {
-                    const videoId = video.snippet.resourceId.videoId;
-                    const thumb = video.snippet.thumbnails ? video.snippet.thumbnails.default.url : '';
-
-                    // Create Item
+                    const thumb = video.snippet.thumbnails ? (video.snippet.thumbnails.default?.url || '') : '';
                     const item = document.createElement('div');
-                    item.className = `relative flex items-center gap-4 bg-[#1a1a1a] p-4 rounded-xl border border-white/5 transition group ${!enrolled ? 'cursor-default' : 'cursor-pointer hover:border-[#FF9933]'}`;
-
-                    if (enrolled) {
-                        item.onclick = () => window.open(`https://www.youtube.com/watch?v=${videoId}`, '_blank');
-                    }
-
+                    item.className = 'relative flex items-center gap-4 bg-[#1a1a1a] p-4 rounded-xl border border-white/5';
                     item.innerHTML = `
-                        <div class="${!enrolled ? 'video-locked' : ''} flex items-center gap-4 w-full">
+                        <div class="video-locked flex items-center gap-4 w-full">
                             <span class="text-[#FF9933] font-bold w-6">${index + 1}</span>
                             <img src="${thumb}" class="w-20 rounded border border-white/10">
-                            <div class="flex-1">
+                            <div class="flex-1 min-w-0">
                                 <h4 class="text-sm font-bold line-clamp-1">${video.snippet.title}</h4>
                                 <p class="text-[10px] text-gray-500 uppercase mt-1">Video Module</p>
                             </div>
-                            <i class="fab fa-youtube text-xl ${enrolled ? 'text-red-600' : 'text-gray-800'}"></i>
                         </div>
-                        ${!enrolled ? '<div class="lock-badge"><i class="fas fa-lock"></i></div>' : ''}
+                        <div class="lock-badge"><i class="fas fa-lock"></i></div>
                     `;
                     list.appendChild(item);
                 });
             });
     }
 
-    function closeModal() {
-        document.getElementById('videoModal').style.display = 'none';
+    // "Already Enrolled" Modal Controls
+    function openCheckEnrollmentModal() {
+        closeModal('videoModal');
+        closeModal('studentEnrollModal');
+        const modal = document.getElementById('checkEnrollModal');
+        document.getElementById('enrollErrorMsg').classList.add('hidden');
+        document.getElementById('enrolledCoursesSection').classList.add('hidden');
+        modal.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+    }
+
+    // Verify existing student email
+    async function verifyStudentEmail(e) {
+        e.preventDefault();
+        const email = document.getElementById('lookupEmail').value.trim();
+        const btn = document.getElementById('verifyBtn');
+        const errorBox = document.getElementById('enrollErrorMsg');
+        const courseSection = document.getElementById('enrolledCoursesSection');
+        const courseList = document.getElementById('enrolledCoursesList');
+
+        errorBox.classList.add('hidden');
+        courseSection.classList.add('hidden');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Checking...';
+
+        try {
+            const response = await fetch(`/v1/check-enrollment?email=${encodeURIComponent(email)}`);
+            const data = await response.json();
+
+            if (data.status === 'success') {
+                if (data.courses.length === 1) {
+                    window.location.href = data.courses[0].dashboardUrl;
+                } else {
+                    courseList.innerHTML = '';
+                    data.courses.forEach(c => {
+                        const item = document.createElement('a');
+                        item.href = c.dashboardUrl;
+                        item.className = "flex items-center justify-between p-3 bg-[#1c1c1c] hover:bg-[#252525] border border-white/5 hover:border-[#FF9933] rounded-xl transition text-xs";
+                        item.innerHTML = `
+                            <div class="truncate mr-2">
+                                <p class="font-bold text-white truncate">${c.playlistTitle}</p>
+                                <span class="text-[10px] text-gray-400">Progress: ${c.progress}%</span>
+                            </div>
+                            <i class="fas fa-chevron-right text-[#FF9933]"></i>
+                        `;
+                        courseList.appendChild(item);
+                    });
+                    courseSection.classList.remove('hidden');
+                }
+            } else {
+                errorBox.innerText = data.message || "No enrolled courses found for this email.";
+                errorBox.classList.remove('hidden');
+            }
+        } catch (err) {
+            console.error(err);
+            errorBox.innerText = "Error connecting to server. Please try again.";
+            errorBox.classList.remove('hidden');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<span>Find My Dashboard</span> <i class="fas fa-arrow-right"></i>';
+        }
+    }
+
+    // Modal Helper
+    function closeModal(id) {
+        document.getElementById(id).style.display = 'none';
         document.body.style.overflow = 'auto';
     }
 
-    // Hero Slider
+    // Hero Carousel
     const slides = document.querySelectorAll('.slide');
     const heroTitle = document.getElementById('hero-title');
     const heroQuote = document.getElementById('hero-quote');
@@ -243,7 +448,7 @@
         }, 600);
     }, 5000);
 
-    // Deep Linking Support (from index top bar)
+    // Deep-Linking Handler (Supports opening via ?open=PLAYLIST_ID query param)
     window.onload = () => {
         const urlParams = new URLSearchParams(window.location.search);
         const openId = urlParams.get('open');

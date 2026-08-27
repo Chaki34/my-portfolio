@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Player | Codi_Die_Oxcide</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <style>
+        :root {
+            --saffron: #FF9933;
+            --dark-bg: #0a0a0a;
+            --card-bg: #121212;
+            --indian-green: #138808;
+        }
+        body { background-color: var(--dark-bg); font-family: 'Inter', sans-serif; color: white; }
+        .header-font { font-family: 'Playfair Display', serif; }
+        .custom-player-wrapper { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 1rem; border: 1px solid #222; }
+        .custom-player-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+        .playlist-item.active { border-color: var(--saffron); background: #1c1813; }
+        .flag-stripes { width: 100%; height: 6px; display: flex; position: fixed; bottom: 0; z-index: 100; }
+        .stripe-saffron { background: var(--saffron); flex: 1; }
+        .stripe-white { background: #ffffff; flex: 1; }
+        .stripe-green { background: var(--indian-green); flex: 1; }
+    </style>
+</head>
+<body class="pb-16">
+
+<nav class="sticky top-0 bg-[#0a0a0a]/90 backdrop-blur-md px-6 md:px-12 py-4 flex justify-between items-center z-50 border-b border-white/5">
+    <div class="flex items-center space-x-3">
+        <div class="w-8 h-8 bg-[#FF9933] transform rotate-45 flex items-center justify-center text-black font-bold">
+            <span class="-rotate-45">C</span>
+        </div>
+        <span class="header-font text-xl md:text-2xl tracking-tighter" th:text="${enrollment.playlistTitle}">Course Dashboard</span>
+    </div>
+    <div class="flex items-center gap-4">
+        <span class="text-xs text-gray-400 hidden md:inline">Logged in as: <strong class="text-white" th:text="${student.fullName}">Student</strong></span>
+        <a th:href="@{/v1/courses}" class="text-xs font-bold hover:text-[#FF9933] uppercase tracking-widest">
+            <i class="fas fa-arrow-left mr-1"></i> Exit Player
+        </a>
+    </div>
+</nav>
+
+<main class="max-w-7xl mx-auto px-4 md:px-8 py-8">
+    <!-- Progress & 80% Hours Certificate Rule Banner -->
+    <div class="bg-[#121212] border border-white/10 rounded-2xl p-6 mb-8 flex flex-col md:flex-row items-center justify-between gap-6">
+        <div class="flex-1 w-full">
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-xs font-bold uppercase tracking-wider text-gray-400">Total Course Duration Completed (Hours Based)</span>
+                <span id="progressText" class="text-sm font-bold text-[#FF9933]" th:text="${enrollment.progressPercentage + '%'}">0%</span>
+            </div>
+            <div class="w-full bg-white/10 rounded-full h-3 overflow-hidden">
+                <div id="progressBar" class="bg-[#FF9933] h-full transition-all duration-500 rounded-full" th:style="'width: ' + ${enrollment.progressPercentage} + '%'"></div>
+            </div>
+            <p class="text-[10px] text-gray-500 mt-2">Requirement: Complete at least 80% of total video watch hours to unlock your verified credential.</p>
+        </div>
+
+        <div>
+            <button id="certBtn"
+                    th:class="${enrollment.certificateUnlocked ? 'bg-green-600 hover:bg-green-500 cursor-pointer' : 'bg-gray-800 text-gray-500 cursor-not-allowed'} + ' px-6 py-3 rounded-xl font-bold text-xs uppercase tracking-wider transition flex items-center gap-2 shadow-lg'"
+                    th:disabled="${!enrollment.certificateUnlocked}"
+                    onclick="claimCertificate()">
+                <i class="fas fa-award text-lg"></i>
+                <span id="certText" th:text="${enrollment.certificateUnlocked ? 'Claim Verified Certificate' : 'Certificate Locked (Requires 80% Watch-Time)'}"></span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Workspace: Player & Module Playlist -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="lg:col-span-2 space-y-4">
+            <div class="custom-player-wrapper bg-black">
+                <div id="player"></div>
+            </div>
+
+            <!-- Player Info & Controls Card -->
+            <div class="bg-[#121212] border border-white/5 p-6 rounded-2xl">
+                <h2 id="currentVideoTitle" class="text-xl font-bold mb-2">Select a video to start</h2>
+                <div class="flex flex-wrap items-center justify-between gap-4 text-xs text-gray-400">
+                    <div class="flex items-center gap-4">
+                        <span id="videoStatus"><i class="fas fa-play text-[#FF9933] mr-1"></i> Ready</span>
+                        <span>&bull;</span>
+                        <span id="watchDuration">Watched: 0s</span>
+                    </div>
+
+                    <!-- Volume Controls -->
+                    <div class="flex items-center gap-2 bg-[#1a1a1a] px-3 py-1.5 rounded-lg border border-white/10">
+                        <button type="button" onclick="decreaseVolume()" class="hover:text-[#FF9933] transition" title="Decrease Volume">
+                            <i class="fas fa-volume-down"></i>
+                        </button>
+                        <input type="range" id="volumeSlider" min="0" max="100" value="100" oninput="setVolume(this.value)" class="w-16 h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-[#FF9933]">
+                        <button type="button" onclick="increaseVolume()" class="hover:text-[#FF9933] transition" title="Increase Volume">
+                            <i class="fas fa-volume-up"></i>
+                        </button>
+                        <button type="button" onclick="fullVolume()" class="hover:text-[#FF9933] transition pl-1 border-l border-white/10 font-bold flex items-center gap-1" title="Max Sound">
+                            <i class="fas fa-volume-high"></i> <span class="text-[10px]">MAX</span>
+                        </button>
+                        <span id="volumeLevel" class="text-[10px] font-mono text-gray-400">100%</span>
+                    </div>
+                </div>
+
+                <!-- Highlighted Notice -->
+                <div class="mt-4 p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl flex items-start gap-2.5 text-amber-400 text-xs">
+                    <i class="fas fa-exclamation-triangle mt-0.5 text-sm flex-shrink-0"></i>
+                    <div>
+                        <span class="font-bold uppercase tracking-wider">Important Notice:</span>
+                        Do not click any suggested videos or end-screen cards inside the player. External/suggested video playback will redirect you to YouTube and will <strong>not</strong> count towards your course watch time or certificate eligibility. Use only the sidebar playlist to navigate modules.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Activity Logs -->
+            <div class="bg-[#121212] border border-white/5 p-6 rounded-2xl">
+                <h3 class="text-sm font-bold uppercase tracking-wider mb-4 border-l-2 border-[#FF9933] pl-2">Session History Log</h3>
+                <div id="logContainer" class="space-y-2 max-h-48 overflow-y-auto text-xs font-mono text-gray-400">
+                    <div th:each="l : ${logs}" class="flex justify-between border-b border-white/5 py-1">
+                        <span th:text="${l.actionType + ' - ' + l.videoTitle}"></span>
+                        <span th:text="${#temporals.format(l.timestamp, 'HH:mm:ss')}"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Playlist Sidebar (Isolated Navigation) -->
+        <div class="bg-[#121212] border border-white/5 rounded-2xl p-6 h-[750px] flex flex-col">
+            <h3 class="text-sm font-bold uppercase tracking-wider mb-4 border-l-2 border-[#FF9933] pl-2">Course Modules</h3>
+            <div class="space-y-3 overflow-y-auto flex-1 pr-1" id="playlistItems">
+                <div th:each="video, iter : ${videos}"
+                     th:data-videoid="${video.snippet.resourceId.videoId}"
+                     th:data-title="${video.snippet.title}"
+                     onclick="loadVideo(this.getAttribute('data-videoid'), this.getAttribute('data-title'), this)"
+                     class="playlist-item flex items-center gap-3 p-3 rounded-xl border border-white/5 hover:border-white/20 transition cursor-pointer bg-[#181818]">
+                    <span class="text-xs font-bold text-[#FF9933] w-5" th:text="${iter.index + 1}">1</span>
+                    <img th:src="${video.snippet.thumbnails != null ? (video.snippet.thumbnails.default != null ? video.snippet.thumbnails.default.url : '') : ''}" class="w-16 h-10 object-cover rounded border border-white/10">
+                    <div class="flex-1 min-w-0">
+                        <h4 class="text-xs font-bold truncate text-gray-200" th:text="${video.snippet.title}">Title</h4>
+                        <p class="text-[10px] text-gray-500">Module <span th:text="${iter.index + 1}"></span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div class="flag-stripes">
+    <div class="stripe-saffron"></div>
+    <div class="stripe-white"></div>
+    <div class="stripe-green"></div>
+</div>
+
+<script src="https://www.youtube.com/iframe_api"></script>
+<script th:inline="javascript">
+    const studentId = /*[[${student.id}]]*/ 0;
+    const playlistId = /*[[${enrollment.playlistId}]]*/ '';
+
+    let player;
+    let currentVideoId = "";
+    let currentVideoTitle = "";
+    let heartbeatInterval = null;
+
+    function onYouTubeIframeAPIReady() {
+        const firstItem = document.querySelector('.playlist-item');
+        if (firstItem) {
+            currentVideoId = firstItem.getAttribute('data-videoid');
+            currentVideoTitle = firstItem.getAttribute('data-title');
+            firstItem.classList.add('active');
+            document.getElementById('currentVideoTitle').innerText = currentVideoTitle;
+        }
+
+        player = new YT.Player('player', {
+            videoId: currentVideoId,
+            playerVars: {
+                'playsinline': 1,
+                'rel': 0,               // Do not show unrelated videos
+                'modestbranding': 1,    // Minimal YouTube branding
+                'iv_load_policy': 3,    // Disable annotations/popups
+                'fs': 1
+            },
+            events: {
+                'onReady': onPlayerReady,
+                'onStateChange': onPlayerStateChange
+            }
+        });
+    }
+
+    function onPlayerReady(event) {
+        if (player && player.getVolume) {
+            const vol = player.getVolume();
+            document.getElementById('volumeSlider').value = vol;
+            document.getElementById('volumeLevel').innerText = vol + '%';
+        }
+    }
+
+    function setVolume(val) {
+        if (player && player.setVolume) {
+            player.unMute();
+            player.setVolume(val);
+            document.getElementById('volumeSlider').value = val;
+            document.getElementById('volumeLevel').innerText = val + '%';
+        }
+    }
+
+    function increaseVolume() {
+        if (player && player.getVolume) {
+            let current = player.getVolume();
+            let next = Math.min(100, current + 10);
+            setVolume(next);
+        }
+    }
+
+    function decreaseVolume() {
+        if (player && player.getVolume) {
+            let current = player.getVolume();
+            let next = Math.max(0, current - 10);
+            setVolume(next);
+        }
+    }
+
+    function fullVolume() {
+        setVolume(100);
+    }
+
+    function loadVideo(videoId, title, element) {
+        document.querySelectorAll('.playlist-item').forEach(el => el.classList.remove('active'));
+        if (element) element.classList.add('active');
+
+        currentVideoId = videoId;
+        currentVideoTitle = title;
+        document.getElementById('currentVideoTitle').innerText = title;
+
+        if (player && player.loadVideoById) {
+            player.loadVideoById(videoId);
+        }
+        logClientAction("START");
+    }
+
+    function onPlayerStateChange(event) {
+        if (event.data === YT.PlayerState.PLAYING) {
+            document.getElementById('videoStatus').innerHTML = '<i class="fas fa-play text-green-500 mr-1"></i> Playing';
+            startHeartbeat();
+            logClientAction("PLAY");
+        } else if (event.data === YT.PlayerState.PAUSED) {
+            document.getElementById('videoStatus').innerHTML = '<i class="fas fa-pause text-yellow-500 mr-1"></i> Paused';
+            stopHeartbeat();
+            sendHeartbeat("PAUSE");
+        } else if (event.data === YT.PlayerState.ENDED) {
+            document.getElementById('videoStatus').innerHTML = '<i class="fas fa-check text-green-500 mr-1"></i> Completed';
+            stopHeartbeat();
+            sendHeartbeat("FINISH");
+            playNextVideo();
+        }
+    }
+
+    function startHeartbeat() {
+        stopHeartbeat();
+        heartbeatInterval = setInterval(() => {
+            sendHeartbeat("WATCHING");
+        }, 10000);
+    }
+
+    function stopHeartbeat() {
+        if (heartbeatInterval) clearInterval(heartbeatInterval);
+    }
+
+    function sendHeartbeat(action) {
+        if (!player || !player.getCurrentTime) return;
+
+        const currentTime = player.getCurrentTime();
+        const duration = player.getDuration() || 0;
+
+        document.getElementById('watchDuration').innerText = `Watched: ${Math.floor(currentTime)}s / ${Math.floor(duration)}s`;
+
+        fetch('/v1/video-heartbeat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                studentId: studentId,
+                playlistId: playlistId,
+                videoId: currentVideoId,
+                videoTitle: currentVideoTitle,
+                currentTime: currentTime,
+                duration: duration,
+                actionType: action
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.progress !== undefined) {
+                document.getElementById('progressBar').style.width = data.progress + '%';
+                document.getElementById('progressText').innerText = data.progress + '%';
+
+                if (data.certificateUnlocked) {
+                    const btn = document.getElementById('certBtn');
+                    btn.disabled = false;
+                    btn.className = "bg-green-600 hover:bg-green-500 cursor-pointer px-6 py-3 rounded-xl font-bold text-xs uppercase tracking-wider transition flex items-center gap-2 shadow-lg";
+                    document.getElementById('certText').innerText = "Claim Verified Certificate";
+                }
+            }
+        });
+    }
+
+    function playNextVideo() {
+        const active = document.querySelector('.playlist-item.active');
+        if (active && active.nextElementSibling) {
+            const next = active.nextElementSibling;
+            loadVideo(next.getAttribute('data-videoid'), next.getAttribute('data-title'), next);
+        }
+    }
+
+    function logClientAction(action) {
+        const logBox = document.getElementById('logContainer');
+        const entry = document.createElement('div');
+        entry.className = "flex justify-between border-b border-white/5 py-1";
+        const time = new Date().toTimeString().split(' ')[0];
+        entry.innerHTML = `<span>${action} - ${currentVideoTitle}</span><span>${time}</span>`;
+        logBox.prepend(entry);
+    }
+
+    function claimCertificate() {
+        window.location.href = `/v1/student-certificate?studentId=${studentId}&playlistId=${playlistId}`;
+    }
+</script>
+</body>
+</html>

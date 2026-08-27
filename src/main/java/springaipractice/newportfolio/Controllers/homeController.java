@@ -6,6 +6,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import springaipractice.newportfolio.Models.*;
 import springaipractice.newportfolio.Repos.ContactRepository;
+import springaipractice.newportfolio.Repos.CourseEnrollmentRepository;
+import springaipractice.newportfolio.Repos.StudentUserRepository;
+import springaipractice.newportfolio.Repos.VideoProgressLogRepository;
 import springaipractice.newportfolio.Services.*;
 
 import java.time.LocalDate;
@@ -28,6 +31,18 @@ public class homeController {
 
 
     private FeedbackService feedbackService;
+
+    @Autowired
+    private CourseProgressService courseProgressService;
+
+    @Autowired
+    private CourseEnrollmentRepository enrollmentRepo;
+
+    @Autowired
+    private VideoProgressLogRepository progressLogRepo;
+
+    @Autowired
+    private StudentUserRepository studentUserRepository;
 
     public homeController(VisitService visitService, YouTubeService youTubeService, ContactRepository contactRepository , BrevoEmailService brevoEmailService , FeedbackService feedbackService) {
         this.visitService = visitService;
@@ -231,7 +246,128 @@ public class homeController {
     public List<Map<String, Object>> getVideos(@PathVariable String id) {
         return youTubeService.getPlaylistVideos(id);
     }
+
+    @PostMapping("/enroll-course")
+    @ResponseBody
+    public Map<String, Object> handleEnrollment(@RequestBody EnrollmentDTO dto, jakarta.servlet.http.HttpServletRequest request) {
+        Map<String, Object> res = new HashMap<>();
+        try {
+            CourseEnrollment enrollment = courseProgressService.enrollStudent(dto, request);
+            res.put("status", "success");
+            res.put("studentId", enrollment.getStudent().getId());
+            res.put("playlistId", enrollment.getPlaylistId());
+            res.put("redirectUrl", "/v1/course-dashboard?studentId=" + enrollment.getStudent().getId() + "&playlistId=" + enrollment.getPlaylistId());
+        } catch (Exception e) {
+            e.printStackTrace();
+            res.put("status", "error");
+            res.put("message", e.getMessage());
+        }
+        return res;
+    }
+
+    @GetMapping("/course-dashboard")
+    public String showDashboard(@RequestParam Long studentId, @RequestParam String playlistId, Model model) {
+        StudentUser student = studentUserRepository.findById(studentId).orElse(null);
+        CourseEnrollment enrollment = enrollmentRepo.findByStudentIdAndPlaylistId(studentId, playlistId).orElse(null);
+
+        if (student == null || enrollment == null) {
+            return "redirect:/v1/courses";
+        }
+
+        List<Map<String, Object>> videos = youTubeService.getPlaylistVideos(playlistId);
+        List<VideoProgressLog> logs = progressLogRepo.findTop20ByStudentIdAndPlaylistIdOrderByTimestampDesc(studentId, playlistId);
+
+        model.addAttribute("student", student);
+        model.addAttribute("enrollment", enrollment);
+        model.addAttribute("videos", videos);
+        model.addAttribute("logs", logs);
+
+        return "course-dashboard";
+    }
+
+    @PostMapping("/video-heartbeat")
+    @ResponseBody
+    public Map<String, Object> videoHeartbeat(@RequestBody Map<String, Object> payload) {
+        Long studentId = Long.valueOf(payload.get("studentId").toString());
+        String playlistId = (String) payload.get("playlistId");
+        String videoId = (String) payload.get("videoId");
+        String videoTitle = (String) payload.get("videoTitle");
+        double currentTime = Double.parseDouble(payload.get("currentTime").toString());
+        double duration = Double.parseDouble(payload.get("duration").toString());
+        String actionType = (String) payload.get("actionType");
+
+        courseProgressService.recordVideoHeartbeat(studentId, playlistId, videoId, videoTitle, currentTime, duration, actionType);
+
+        CourseEnrollment enrollment = enrollmentRepo.findByStudentIdAndPlaylistId(studentId, playlistId).orElse(null);
+        Map<String, Object> res = new HashMap<>();
+        res.put("status", "ok");
+        if (enrollment != null) {
+            res.put("progress", enrollment.getProgressPercentage());
+            res.put("certificateUnlocked", enrollment.isCertificateUnlocked());
+        }
+        return res;
+    }
+
+    @GetMapping("/student-certificate")
+    public String showStudentCertificate(@RequestParam Long studentId, @RequestParam String playlistId, Model model) {
+        StudentUser student = studentUserRepository.findById(studentId).orElse(null);
+        CourseEnrollment enrollment = enrollmentRepo.findByStudentIdAndPlaylistId(studentId, playlistId).orElse(null);
+
+        // Security check: Must have completed at least 80% total watch hours
+        if (student == null || enrollment == null || !enrollment.isCertificateUnlocked()) {
+            return "redirect:/v1/course-dashboard?studentId=" + studentId + "&playlistId=" + playlistId;
+        }
+
+        model.addAttribute("student", student);
+        model.addAttribute("enrollment", enrollment);
+        model.addAttribute("completionDate", LocalDate.now().format(DateTimeFormatter.ofPattern("dd MMMM yyyy")));
+        model.addAttribute("certificateId", "CERT-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
+
+        return "student-certificate";
+    }
+
+    @GetMapping("/check-enrollment")
+    @ResponseBody
+    public Map<String, Object> checkExistingEnrollment(@RequestParam String email) {
+        Map<String, Object> response = new HashMap<>();
+
+        Optional<StudentUser> studentOpt = studentUserRepository.findByEmail(email.trim().toLowerCase());
+
+        if (studentOpt.isEmpty()) {
+            response.put("status", "not_found");
+            response.put("message", "No student enrollment found for this email address.");
+            return response;
+        }
+
+        StudentUser student = studentOpt.get();
+        List<CourseEnrollment> enrollments = enrollmentRepo.findAllByStudentId(student.getId());
+
+        if (enrollments.isEmpty()) {
+            response.put("status", "not_found");
+            response.put("message", "No enrolled courses found for this user.");
+            return response;
+        }
+
+        response.put("status", "success");
+        response.put("studentId", student.getId());
+        response.put("studentName", student.getFullName());
+
+        List<Map<String, Object>> courseList = new ArrayList<>();
+        for (CourseEnrollment ce : enrollments) {
+            Map<String, Object> c = new HashMap<>();
+            c.put("playlistId", ce.getPlaylistId());
+            c.put("playlistTitle", ce.getPlaylistTitle());
+            c.put("progress", ce.getProgressPercentage());
+            c.put("dashboardUrl", "/v1/course-dashboard?studentId=" + student.getId() + "&playlistId=" + ce.getPlaylistId());
+            courseList.add(c);
+        }
+
+        response.put("courses", courseList);
+        return response;
+    }
 }
+
+
 
 
 
